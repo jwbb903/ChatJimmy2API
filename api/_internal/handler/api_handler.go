@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -69,9 +70,15 @@ func (h *APIHandler) RegisterRoutes(router *gin.Engine) {
 func (h *APIHandler) authMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		cfg := h.configMgr.Get()
-		
+
+		// 优先使用环境变量 ADMIN_PASSWORD（用于 Vercel）
+		apiKey := os.Getenv("ADMIN_PASSWORD")
+		if apiKey == "" {
+			apiKey = cfg.WrapperAPIKey
+		}
+
 		// 如果未设置密钥，跳过认证
-		if cfg.WrapperAPIKey == "" {
+		if apiKey == "" {
 			c.Next()
 			return
 		}
@@ -92,8 +99,8 @@ func (h *APIHandler) authMiddleware() gin.HandlerFunc {
 
 		token := strings.TrimPrefix(authHeader, "Bearer ")
 		token = strings.TrimPrefix(token, "bearer ")
-		
-		if token != cfg.WrapperAPIKey {
+
+		if token != apiKey {
 			c.JSON(http.StatusUnauthorized, gin.H{
 				"error": gin.H{
 					"message": "Invalid API key.",

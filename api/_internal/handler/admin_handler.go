@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"net/http"
+	"os"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -25,11 +26,18 @@ type AdminHandler struct {
 // NewAdminHandler 创建管理界面处理器
 func NewAdminHandler(cfgMgr *config.Manager, metricsMgr *metrics.Manager, log *logger.Logger) *AdminHandler {
 	cfg := cfgMgr.Get()
+	
+	// 优先使用环境变量 ADMIN_PASSWORD（用于 Vercel）
+	adminPassword := os.Getenv("ADMIN_PASSWORD")
+	if adminPassword == "" {
+		adminPassword = cfg.WrapperAPIKey
+	}
+	
 	return &AdminHandler{
 		configManager: cfgMgr,
 		metrics:       metricsMgr,
 		logger:        log,
-		adminPassword: cfg.WrapperAPIKey,
+		adminPassword: adminPassword,
 		activeTokens:  make(map[string]bool),
 	}
 }
