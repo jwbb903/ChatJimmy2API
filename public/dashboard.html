@@ -739,24 +739,24 @@
             try {
                 const configResponse = await fetch('/api/config', {
                     headers: {
-                        'Authorization': `Bearer ${token}`
+                        'Authorization': `Bearer ${adminPassword}`
                     }
                 });
 
                 const statsResponse = await fetch('/api/stats', {
                     headers: {
-                        'Authorization': `Bearer ${token}`
+                        'Authorization': `Bearer ${adminPassword}`
                     }
                 });
 
                 if (configResponse.ok && statsResponse.ok) {
                     const config = await configResponse.json();
                     const stats = await statsResponse.json();
-                    
+
                     // 计算运行时间
                     const uptimeSeconds = Math.floor((Date.now() - new Date(stats.start_time).getTime()) / 1000);
                     const uptimeText = formatUptime(uptimeSeconds);
-                    
+
                     document.getElementById('server-info').innerHTML = `
                         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
                             <div>
