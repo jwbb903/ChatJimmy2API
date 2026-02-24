@@ -1,162 +1,89 @@
-# ChatJimmy2API - Vercel Serverless 版本
+# ChatJimmy2API
 
-高性能 Go 语言实现的 OpenAI 兼容 API 包装器，适配 Vercel Serverless 部署。
+高性能 Go 语言实现的 OpenAI 兼容 API 包装器，用于代理 https://chatjimmy.ai 服务。
 
-## ✨ 特性
+## 特性
 
-- 🚀 **高性能** - Go 语言实现，低内存占用，高并发支持
-- 🎨 **MD3 设计** - Material Design 3 风格，现代化管理界面
-- 📱 **响应式布局** - 自动适应桌面、平板、手机等各种屏幕尺寸
-- 🌈 **透明卡片** - 毛玻璃效果，动态动漫背景
-- ⚙️ **配置热重载** - 修改配置文件自动生效，无需重启服务
-- 📊 **实时统计** - 请求次数、Token 消耗、错误统计，持久化存储
-- 🖥️ **Web 管理界面** - 可视化配置管理、状态监控、日志查看
-- 🔐 **安全认证** - 管理界面访问密码保护，Token 认证
-- 📡 **流式输出** - 支持 Fake 和 Batch 两种流式模拟模式
-- 📝 **结构化日志** - JSON 格式日志，便于日志收集和分析
+- 高性能 Go 语言实现，低内存占用，高并发支持
+- OpenAI 兼容 API 端点 (/v1/models, /v1/chat/completions)
+- 配置热重载，修改配置文件自动生效
+- 实时统计（请求次数、Token 消耗、错误统计）
+- Web 管理界面（Material Design 3 风格）
+- 伪流式输出，兼容所有客户端和 Vercel Serverless
+- 结构化 JSON 日志
+- 响应式设计，自动适应各种屏幕尺寸
 
-## 📁 目录结构
+## 部署到 Vercel
 
-```
-.
-├── api/                    # Go 后端代码
-│   ├── vercel.go          # Vercel 入口函数
-│   ├── main.go            # standalone 模式入口
-│   ├── internal/          # 内部包
-│   │   ├── client/        # 上游 HTTP 客户端
-│   │   ├── handler/       # API 和管理界面处理器
-│   │   ├── logger/        # 日志系统
-│   │   ├── metrics/       # 统计指标管理
-│   │   ├── stream/        # 流式模拟器
-│   │   ├── transform/     # 请求/响应格式转换
-│   │   └── types/         # 类型定义
-│   ├── config/            # 配置管理
-│   └── config/config.json # 配置文件
-├── public/                # 前端静态文件（MD3 管理界面）
-│   ├── index.html         # 登录页面
-│   ├── dashboard.html     # 仪表盘（实时监控）
-│   ├── config.html        # 配置管理
-│   ├── stats.html         # 统计分析
-│   └── logs.html          # 系统日志
-└── vercel.json            # Vercel 部署配置
-```
+### 1. 准备 GitHub 仓库
 
-## 🚀 部署到 Vercel
-
-### 1. 配置项目
-
-编辑 `api/config/config.json`：
-
-```json
-{
-  "upstream_base_url": "https://chatjimmy.ai",
-  "wrapper_api_key": "your-secure-password",
-  "port": 8787,
-  "admin_port": 8788
-}
-```
-
-### 2. 部署
+确保你的代码已经推送到 GitHub：
 
 ```bash
-# 安装 Vercel CLI
-npm i -g vercel
-
-# 登录 Vercel
-vercel login
-
-# 部署
-vercel --prod
+git add .
+git commit -m "Update code"
+git push origin main
 ```
 
-部署后访问 `https://your-project.vercel.app` 即可看到管理界面。
+### 2. 在 Vercel 导入项目
 
-## 💻 本地开发
+1. 访问 https://vercel.com/new
+2. 点击 "Import Git Repository"
+3. 选择你的 GitHub 仓库
+4. 点击 "Import"
+
+### 3. 配置环境变量
+
+在 Vercel 项目设置中，添加以下环境变量：
+
+| 变量名 | 说明 | 示例值 |
+|--------|------|--------|
+| `API_KEY` | API 认证密钥（用于 /v1/* 端点） | `my-api-key-123` |
+| `ADMIN_PASSWORD` | 管理界面登录密码 | `my-admin-password` |
+| `DISABLE_ADMIN_API` | 是否禁用管理界面（可选） | `true` 或 `false` |
+| `CONFIG_PATH` | 配置文件路径 | `/var/task/conf/config.json` |
+
+**注意：**
+- `API_KEY` 和 `ADMIN_PASSWORD` 可以设置为相同值，也可以分开
+- 设置 `DISABLE_ADMIN_API=true` 可完全禁用管理界面 API，只保留 OpenAI API 端点
+
+### 4. 配置构建选项
+
+在 Vercel 项目设置的 "Build & Development Settings" 中：
+
+- **Framework Preset**: Other
+- **Build Command**: `cp api/go.mod ./go.mod && cp api/go.sum ./go.sum`
+- **Output Directory**: 留空
+
+### 5. 部署
+
+点击 "Deploy" 按钮开始部署。
+
+部署完成后，你会获得一个域名：
+```
+https://your-project.vercel.app
+```
+
+## 本地开发
+
+### 编译
 
 ```bash
-# 进入 api 目录
 cd api
+go build -o chatjimmy2api .
+```
 
-# 安装依赖
-go mod download
+### 运行
 
-# 运行
-go run main.go
+```bash
+./chatjimmy2api -config config/config.json
 ```
 
 服务启动后：
-- **API 服务**: http://127.0.0.1:8787
-- **管理界面**: http://127.0.0.1:8788
+- API 服务：http://127.0.0.1:8787
+- 管理界面：http://127.0.0.1:8788
 
-默认密码：`local-wrapper-key`（请在生产环境中修改）
-
-## 🎨 管理界面功能
-
-### 登录页面 (`/`)
-- 密码认证
-- Token 持久化（关闭浏览器前无需重复登录）
-- 动态动漫背景
-
-### 仪表盘 (`/dashboard`)
-- 实时统计卡片（总请求数、成功请求、失败请求、Token 消耗）
-- 服务状态监控
-- 最近活动列表
-- 快速刷新
-
-### 配置管理 (`/config`)
-- 上游服务配置（地址、API 密钥、超时、重试）
-- 本地服务配置（端口、密钥、请求限制）
-- 流式输出配置（模式选择、延迟、块大小）
-- 管理界面配置
-- 日志与存储配置
-- 配置验证与热重载
-
-### 统计分析 (`/stats`)
-- 概览统计（成功率进度条）
-- 模型使用分布（百分比展示）
-- 错误统计分类
-- 运行时间统计
-- 时间范围筛选（全部/今天/本周）
-
-### 系统日志 (`/logs`)
-- 日志级别筛选（全部/DEBUG/INFO/SUCCESS/WARNING/ERROR）
-- 实时日志搜索
-- 自动滚动开关
-- 分页浏览
-- 日志下载
-- 清空日志
-
-## 🔌 API 端点
-
-### OpenAI 兼容端点（端口 8787）
-
-| 端点 | 方法 | 认证 | 说明 |
-|------|------|------|------|
-| `/v1/models` | GET | ✅ | 获取模型列表 |
-| `/v1/chat/completions` | POST | ✅ | 聊天补全 |
-| `/health` | GET | ❌ | 健康检查 |
-
-### 管理界面端点（端口 8788）
-
-| 端点 | 说明 |
-|------|------|
-| `/` | 登录页面 |
-| `/dashboard` | 仪表盘 |
-| `/config` | 配置管理 |
-| `/stats` | 统计分析 |
-| `/logs` | 系统日志 |
-
-### 管理 API
-
-| 端点 | 方法 | 说明 |
-|------|------|------|
-| `/api/admin/login` | POST | 登录 |
-| `/api/admin/logout` | POST | 登出 |
-| `/api/config` | GET/POST | 获取/更新配置 |
-| `/api/stats` | GET | 获取统计 |
-| `/api/logs` | GET | 获取日志 |
-
-## ⚙️ 配置说明
+### 配置
 
 编辑 `api/config/config.json`：
 
@@ -169,8 +96,8 @@ go run main.go
   "host": "127.0.0.1",
   "port": 8787,
   "wrapper_api_key": "local-wrapper-key",
+  "body_limit_mb": 4,
   "stream_mode": "fake",
-  "fake_stream_delay_ms": 50,
   "admin_enabled": true,
   "admin_port": 8788,
   "log_file": "logs/server.log",
@@ -178,43 +105,176 @@ go run main.go
 }
 ```
 
-### 关键配置项
+## API 端点
 
-| 配置项 | 说明 | 默认值 |
-|--------|------|--------|
-| `upstream_base_url` | 上游服务地址 | `https://chatjimmy.ai` |
-| `wrapper_api_key` | 本地 API 认证密钥 | `local-wrapper-key` |
-| `port` | API 服务端口 | `8787` |
-| `admin_port` | 管理界面端口 | `8788` |
-| `stream_mode` | 流式模式 | `fake` / `batch` |
+### OpenAI 兼容端点
 
-## 🔐 安全建议
+| 端点 | 方法 | 认证 | 说明 |
+|------|------|------|------|
+| `/v1/models` | GET | API_KEY | 获取模型列表 |
+| `/v1/chat/completions` | POST | API_KEY | 聊天补全 |
+| `/health` | GET | 无 | 健康检查 |
 
-1. **修改默认密码**：生产环境必须修改 `wrapper_api_key`
-2. **使用 HTTPS**：建议通过反向代理提供 HTTPS
-3. **限制访问**：配置防火墙规则限制访问 IP
-4. **定期更新 Token**：管理界面 Token 应定期更新
+### 管理界面端点
 
-## ⚠️ 注意事项
+| 端点 | 说明 |
+|------|------|
+| `/` | 登录页面 |
+| `/dashboard` | 仪表盘（实时监控） |
+| `/config` | 配置管理 |
+| `/stats` | 统计分析 |
+| `/logs` | 系统日志 |
 
-1. **Vercel 限制**：Serverless 函数最大执行时间 60 秒
-2. **数据持久化**：Vercel 环境下 `/tmp` 目录数据重启后清除
-3. **日志缓冲**：日志缓冲默认 1000 条，统计刷新间隔默认 30 秒
-4. **背景图片**：使用 https://www.loliapi.com/acg/ 提供的动态动漫背景
+### 管理 API
 
-## 📸 界面预览
+| 端点 | 方法 | 认证 | 说明 |
+|------|------|------|------|
+| `/api/admin/login` | POST | 无 | 登录 |
+| `/api/admin/logout` | POST | ADMIN_PASSWORD | 登出 |
+| `/api/config` | GET/POST | ADMIN_PASSWORD | 获取/更新配置 |
+| `/api/stats` | GET | ADMIN_PASSWORD | 获取统计 |
+| `/api/logs` | GET | ADMIN_PASSWORD | 获取日志 |
 
-管理界面采用 Material Design 3 设计规范：
-- 毛玻璃透明卡片效果
-- 平滑动画过渡
-- 响应式侧边导航
-- 移动端适配
-- 动态动漫背景
+## 使用示例
 
-## 🤝 贡献
+### cURL
 
-欢迎提交 Issue 和 Pull Request！
+获取模型列表：
+```bash
+curl -sS \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  "https://your-project.vercel.app/v1/models"
+```
 
-## 📄 许可证
+非流式聊天：
+```bash
+curl -sS \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"model":"llama3.1-8B","messages":[{"role":"user","content":"Hello!"}]}' \
+  "https://your-project.vercel.app/v1/chat/completions"
+```
+
+伪流式聊天：
+```bash
+curl -sS -N \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"model":"llama3.1-8B","stream":true,"messages":[{"role":"user","content":"Hello"}]}' \
+  "https://your-project.vercel.app/v1/chat/completions"
+```
+
+### Node.js
+
+```javascript
+import OpenAI from 'openai';
+
+const openai = new OpenAI({
+  baseURL: 'https://your-project.vercel.app/v1',
+  apiKey: 'YOUR_API_KEY',
+});
+
+const completion = await openai.chat.completions.create({
+  model: 'llama3.1-8B',
+  messages: [{ role: 'user', content: 'Hello!' }],
+});
+```
+
+### Python
+
+```python
+from openai import OpenAI
+
+client = OpenAI(
+    base_url="https://your-project.vercel.app/v1",
+    api_key="YOUR_API_KEY"
+)
+
+response = client.chat.completions.create(
+    model="llama3.1-8B",
+    messages=[{"role": "user", "content": "Hello!"}]
+)
+```
+
+## 环境变量说明
+
+### API_KEY
+
+用于 OpenAI 兼容 API 端点的认证（`/v1/*`）。
+
+客户端请求时需要携带：
+```
+Authorization: Bearer YOUR_API_KEY
+```
+
+### ADMIN_PASSWORD
+
+用于管理界面的登录认证。
+
+在管理界面登录时使用此密码。
+
+### DISABLE_ADMIN_API
+
+设置为 `true` 或 `1` 时，完全禁用管理界面 API。
+
+适用场景：
+- 只使用 OpenAI API 端点
+- 减少攻击面
+- 节省 Vercel 函数执行时间
+
+### CONFIG_PATH
+
+配置文件路径，Vercel 环境下应设置为：
+```
+/var/task/conf/config.json
+```
+
+## 注意事项
+
+1. **安全建议**
+   - 生产环境必须修改默认密码
+   - 使用强密码作为 API_KEY 和 ADMIN_PASSWORD
+   - 考虑设置 DISABLE_ADMIN_API=true 禁用管理界面
+
+2. **Vercel 限制**
+   - Serverless 函数最大执行时间 300 秒
+   - 请求体大小限制 4.5 MB
+   - /tmp 目录数据重启后清除
+
+3. **伪流式说明**
+   - 由于 Vercel Serverless 不支持 http.Flusher，使用伪流式模式
+   - 一次性生成所有 SSE 格式数据并返回
+   - 兼容所有支持 SSE 的客户端
+
+## 目录结构
+
+```
+.
+├── api/                    # Go 后端代码
+│   ├── vercel.go          # Vercel 入口函数
+│   ├── _internal/         # 内部包（Vercel 不扫描）
+│   │   ├── client/        # 上游 HTTP 客户端
+│   │   ├── config/        # 配置管理
+│   │   ├── handler/       # API 处理器
+│   │   ├── logger/        # 日志系统
+│   │   ├── metrics/       # 统计管理
+│   │   ├── stream/        # 流式模拟
+│   │   ├── transform/     # 格式转换
+│   │   └── types/         # 类型定义
+│   ├── go.mod             # Go 模块定义
+│   └── go.sum             # 依赖锁定
+├── public/                # 前端静态文件
+│   ├── index.html         # 登录页面
+│   ├── dashboard.html     # 仪表盘
+│   ├── config.html        # 配置管理
+│   ├── stats.html         # 统计分析
+│   └── logs.html          # 系统日志
+├── conf/                  # 配置文件
+│   └── config.json        # 配置示例
+├── vercel.json            # Vercel 部署配置
+└── README.md              # 项目说明
+```
+
+## 许可证
 
 MIT License

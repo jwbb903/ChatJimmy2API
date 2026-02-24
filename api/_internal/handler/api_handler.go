@@ -63,8 +63,8 @@ func (h *APIHandler) authMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		cfg := h.configMgr.Get()
 
-		// 优先使用环境变量 ADMIN_PASSWORD（用于 Vercel）
-		apiKey := os.Getenv("ADMIN_PASSWORD")
+		// 优先使用环境变量 API_KEY（用于 Vercel）
+		apiKey := os.Getenv("API_KEY")
 		if apiKey == "" {
 			apiKey = cfg.WrapperAPIKey
 		}

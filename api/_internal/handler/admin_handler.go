@@ -44,6 +44,13 @@ func NewAdminHandler(cfgMgr *config.Manager, metricsMgr *metrics.Manager, log *l
 
 // RegisterRoutes 注册管理界面路由（独立服务器模式）
 func (h *AdminHandler) RegisterRoutes(router *gin.Engine) {
+	// 检查是否禁用管理界面 API
+	disableAdminAPI := os.Getenv("DISABLE_ADMIN_API")
+	if disableAdminAPI == "true" || disableAdminAPI == "1" {
+		h.logger.Info("管理界面 API 已禁用", map[string]interface{}{})
+		return
+	}
+
 	// 登录页面和根路径（无需认证）
 	router.GET("/login", h.handleLoginPage)
 	router.GET("/", h.handleIndex)
@@ -97,6 +104,13 @@ func (h *AdminHandler) RegisterRoutes(router *gin.Engine) {
 
 // RegisterWebRoutes 注册 Web 路由（Vercel Serverless 模式）
 func (h *AdminHandler) RegisterWebRoutes(router *gin.Engine) {
+	// 检查是否禁用管理界面 API
+	disableAdminAPI := os.Getenv("DISABLE_ADMIN_API")
+	if disableAdminAPI == "true" || disableAdminAPI == "1" {
+		h.logger.Info("管理界面 API 已禁用（Vercel）", map[string]interface{}{})
+		return
+	}
+
 	// 登录页面
 	router.GET("/login", h.handleLoginPage)
 
