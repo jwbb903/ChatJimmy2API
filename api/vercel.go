@@ -1,4 +1,4 @@
-package main
+package handler
 
 import (
 	"net/http"
@@ -6,10 +6,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/taalas/chatjimmy2api/pkg/config"
-	"github.com/taalas/chatjimmy2api/pkg/client"
-	"github.com/taalas/chatjimmy2api/pkg/handler"
-	"github.com/taalas/chatjimmy2api/pkg/logger"
-	"github.com/taalas/chatjimmy2api/pkg/metrics"
+	pkgclient "github.com/taalas/chatjimmy2api/pkg/client"
+	pkgHandler "github.com/taalas/chatjimmy2api/pkg/handler"
+	pkglogger "github.com/taalas/chatjimmy2api/pkg/logger"
+	pkgmetrics "github.com/taalas/chatjimmy2api/pkg/metrics"
 )
 
 var router *gin.Engine
@@ -37,20 +37,20 @@ func init() {
 	cfg := cfgMgr.Get()
 
 	// 初始化日志 - Vercel 环境使用 /tmp 目录
-	logCfg := logger.DefaultConfig()
+	logCfg := pkglogger.DefaultConfig()
 	logCfg.FilePath = "/tmp/logs/server.log"
-	log, err := logger.New(logCfg)
+	log, err := pkglogger.New(logCfg)
 	if err != nil {
 		// 日志初始化失败，使用默认日志（输出到 stdout）
 		logCfg.FilePath = ""
-		log, _ = logger.New(logCfg)
+		log, _ = pkglogger.New(logCfg)
 	}
 
 	// 初始化统计 - Vercel 环境使用 /tmp 目录
-	metricsMgr := metrics.NewManager("/tmp/data/stats.json", cfg.StatsFlushIntervalSec)
+	metricsMgr := pkgmetrics.NewManager("/tmp/data/stats.json", cfg.StatsFlushIntervalSec)
 
 	// 初始化上游客户端
-	upstreamClient := client.NewChatJimmyClient(
+	upstreamClient := pkgclient.NewChatJimmyClient(
 		cfg.UpstreamBaseURL,
 		cfg.UpstreamAPIKey,
 		cfg.UpstreamTimeoutMs,
@@ -58,11 +58,11 @@ func init() {
 	)
 
 	// 注册 API 路由
-	apiHandler := handler.NewAPIHandler(cfgMgr, metricsMgr, log, upstreamClient)
+	apiHandler := pkgHandler.NewAPIHandler(cfgMgr, metricsMgr, log, upstreamClient)
 	apiHandler.RegisterRoutes(router)
 
 	// 注册管理界面路由（Vercel Serverless 模式）
-	adminHandler := handler.NewAdminHandler(cfgMgr, metricsMgr, log)
+	adminHandler := pkgHandler.NewAdminHandler(cfgMgr, metricsMgr, log)
 	adminHandler.RegisterWebRoutes(router)
 }
 
