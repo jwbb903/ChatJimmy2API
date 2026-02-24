@@ -1,6 +1,6 @@
 package transform
 
-import "github.com/taalas/chatjimmy2api/api/_internal/types"
+import "github.com/jwbb903/ChatJimmy2API/api/_internal/types"
 
 // normalizeRole 标准化 role 字段，确保兼容性
 // 将所有已知的 role 值转换为标准格式，未知值统一转换为 assistant
