@@ -490,6 +490,7 @@
             e.preventDefault();
 
             const password = document.getElementById('password').value;
+            const md5Password = md5(password); // 前端先转为 MD5
             const btn = document.getElementById('login-btn');
             const errorDiv = document.getElementById('error-message');
 
@@ -503,14 +504,14 @@
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ password: password }),
+                    body: JSON.stringify({ password: md5Password }), // 发送 MD5 密码
                 });
 
                 const data = await response.json();
 
                 if (response.ok && data.success) {
-                    // 存储 MD5 加密后的密码
-                    localStorage.setItem('admin_password', md5(password));
+                    // 存储 MD5 密码
+                    localStorage.setItem('admin_password', md5Password);
                     window.location.href = '/dashboard';
                 } else {
                     throw new Error(data.message || '登录失败');

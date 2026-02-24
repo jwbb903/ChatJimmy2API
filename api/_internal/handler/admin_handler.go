@@ -217,7 +217,7 @@ func (h *AdminHandler) handleLoginPage(c *gin.Context) {
 // handleLogin 处理登录请求
 func (h *AdminHandler) handleLogin(c *gin.Context) {
 	var req struct {
-		Password string `json:"password"`
+		Password string `json:"password"` // 前端传来的 MD5 密码
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -228,8 +228,11 @@ func (h *AdminHandler) handleLogin(c *gin.Context) {
 		return
 	}
 
-	// 验证密码
-	if req.Password != h.adminPassword {
+	// 计算后端密码的 MD5 值
+	expectedMd5 := md5sum(h.adminPassword)
+
+	// 比较 MD5 值
+	if req.Password != expectedMd5 {
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"success": false,
 			"message": "密码错误",
@@ -237,7 +240,7 @@ func (h *AdminHandler) handleLogin(c *gin.Context) {
 		return
 	}
 
-	// 登录成功，前端会存储 MD5 密码
+	// 登录成功
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"message": "登录成功",
