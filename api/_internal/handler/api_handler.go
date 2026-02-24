@@ -6,14 +6,12 @@ import (
 	"net/http"
 	"os"
 	"strings"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jwbb903/ChatJimmy2API/api/_internal/config"
 	"github.com/jwbb903/ChatJimmy2API/api/_internal/client"
 	"github.com/jwbb903/ChatJimmy2API/api/_internal/logger"
 	"github.com/jwbb903/ChatJimmy2API/api/_internal/metrics"
-	"github.com/jwbb903/ChatJimmy2API/api/_internal/stream"
 	"github.com/jwbb903/ChatJimmy2API/api/_internal/transform"
 	"github.com/jwbb903/ChatJimmy2API/api/_internal/types"
 )
@@ -401,120 +399,9 @@ func (h *APIHandler) handleNonStream(c *gin.Context, resp *http.Response, model 
 
 // handleStream 处理流式响应（伪造）
 func (h *APIHandler) handleStream(c *gin.Context, resp *http.Response, model string, req types.ChatCompletionRequest, meta transform.UpstreamRequestMeta) {
-	cfg := h.configMgr.Get()
-
-	// 读取完整响应
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		h.metrics.RecordRequest(model, true, 0, 0, false, "502")
-		h.logger.Error("读取上游流式响应失败", map[string]interface{}{"error": err.Error()})
-		c.JSON(http.StatusBadGateway, gin.H{
-			"error": gin.H{
-				"message": "Failed to read upstream stream response.",
-				"type":    "server_error",
-				"code":    502,
-			},
-		})
-		return
-	}
-
-	// 解析上游响应
-	rawText := string(body)
-	cleanedText, prompt, completion, finishReason, hasStats := transform.ParseStatsFromText(rawText)
-
-	if cleanedText == "" && !hasStats {
-		h.metrics.RecordRequest(model, true, 0, 0, false, "422")
-		h.logger.Warn("上游返回空流式响应", map[string]interface{}{})
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"error": gin.H{
-				"message": "Upstream returned an empty stream response.",
-				"type":    "invalid_request_error",
-				"code":    422,
-			},
-		})
-		return
-	}
-
-	// 设置 SSE 头
-	c.Header("Content-Type", "text/event-stream; charset=utf-8")
-	c.Header("Cache-Control", "no-cache, no-transform")
-	c.Header("Connection", "keep-alive")
-	c.Header("X-Accel-Buffering", "no")
-
-	// 生成响应 ID 和时间
-	completionID := transform.MakeCompletionID()
-	created := time.Now().Unix()
-
-	// 更新流模拟器配置
-	h.streamSim.UpdateConfig(
-		stream.StreamMode(cfg.StreamMode),
-		cfg.FakeStreamDelayMs,
-		cfg.BatchStreamSize,
-	)
-
-	// 流式发送内容
-	doneChan := make(chan stream.StreamResult, 64)
-	go h.streamSim.StreamContent(cleanedText, doneChan)
-
-	for result := range doneChan {
-		if result.Done {
-			// 发送结束块
-			finishReasonOpenAI := transform.NormalizeFinishReason(finishReason)
-			finalChunk := transform.BuildChatCompletionChunk(
-				completionID,
-				created,
-				model,
-				types.Message{Role: types.RoleAssistant},
-				&finishReasonOpenAI,
-				nil,
-			)
-			data, _ := json.Marshal(finalChunk)
-			c.Writer.WriteString("data: " + string(data) + "\n\n")
-			c.Writer.Flush()
-
-			// 如果请求包含 usage，发送使用量
-			if req.StreamOptions != nil && req.StreamOptions.IncludeUsage != nil && *req.StreamOptions.IncludeUsage {
-				usage := transform.ComputeUsage(prompt, completion)
-				usageChunk := transform.BuildChatCompletionChunk(
-					completionID,
-					created,
-					model,
-					types.Message{Role: types.RoleAssistant},
-					nil,
-					&usage,
-				)
-				data, _ = json.Marshal(usageChunk)
-				c.Writer.WriteString("data: " + string(data) + "\n\n")
-				c.Writer.Flush()
-			}
-
-			// 发送 [DONE]
-			c.Writer.WriteString("data: [DONE]\n\n")
-			c.Writer.Flush()
-			break
-		}
-
-		// 发送内容块
-		chunk := transform.BuildChatCompletionChunk(
-			completionID,
-			created,
-			model,
-			types.Message{Role: types.RoleAssistant, Content: result.Chunk},
-			nil,
-			nil,
-		)
-		data, _ := json.Marshal(chunk)
-		c.Writer.WriteString("data: " + string(data) + "\n\n")
-		c.Writer.Flush()
-	}
-
-	h.metrics.RecordRequest(model, true, prompt, completion, true, "")
-	h.logger.Info("流式聊天补全完成", map[string]interface{}{
-		"model":         model,
-		"stream_mode":   cfg.StreamMode,
-		"prompt_tokens": prompt,
-		"completion_tokens": completion,
-	})
+	// Vercel Serverless 不支持 http.Flusher，强制使用非流式模式
+	c.Header("Content-Type", "application/json; charset=utf-8")
+	h.handleNonStream(c, resp, model, meta)
 }
 
 // buildForwardHeaders 构建转发请求头
