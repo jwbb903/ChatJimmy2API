@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"crypto/rand"
+	"crypto/md5"
 	"encoding/hex"
 	"encoding/json"
 	"net/http"
@@ -20,25 +20,23 @@ type AdminHandler struct {
 	metrics       *metrics.Manager
 	logger        *logger.Logger
 	adminPassword string
-	activeTokens  map[string]bool
 }
 
 // NewAdminHandler 创建管理界面处理器
 func NewAdminHandler(cfgMgr *config.Manager, metricsMgr *metrics.Manager, log *logger.Logger) *AdminHandler {
 	cfg := cfgMgr.Get()
-	
+
 	// 优先使用环境变量 ADMIN_PASSWORD（用于 Vercel）
 	adminPassword := os.Getenv("ADMIN_PASSWORD")
 	if adminPassword == "" {
 		adminPassword = cfg.WrapperAPIKey
 	}
-	
+
 	return &AdminHandler{
 		configManager: cfgMgr,
 		metrics:       metricsMgr,
 		logger:        log,
 		adminPassword: adminPassword,
-		activeTokens:  make(map[string]bool),
 	}
 }
 
@@ -153,7 +151,7 @@ func (h *AdminHandler) RegisterWebRoutes(router *gin.Engine) {
 // authMiddleware 认证中间件
 func (h *AdminHandler) authMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// 跳过登录 API、登录页面
+		// 跳过登录页面和登录 API
 		if c.Request.URL.Path == "/login" ||
 		   c.Request.URL.Path == "/api/admin/login" ||
 		   c.Request.URL.Path == "/api/admin/logout" {
@@ -163,36 +161,33 @@ func (h *AdminHandler) authMiddleware() gin.HandlerFunc {
 
 		// 从 Header 获取 Authorization
 		authHeader := c.GetHeader("Authorization")
-		var token string
+		var md5Password string
 		if authHeader != "" && len(authHeader) > 7 && authHeader[:7] == "Bearer " {
-			token = authHeader[7:]
+			md5Password = authHeader[7:]
 		}
 
-		if token == "" {
-			// 尝试从 cookie 获取
-			cookie, err := c.Cookie("admin_token")
-			if err != nil {
-				// API 请求返回 401，页面请求重定向到登录页
-				if len(c.Request.URL.Path) > 4 && c.Request.URL.Path[:4] == "/api" {
-					c.JSON(http.StatusUnauthorized, gin.H{
-						"success": false,
-						"error":   "未授权访问",
-					})
-				} else {
-					c.Redirect(http.StatusTemporaryRedirect, "/login")
-				}
-				c.Abort()
-				return
-			}
-			token = cookie
-		}
-
-		// 验证 token
-		if !h.activeTokens[token] {
+		if md5Password == "" {
+			// API 请求返回 401，页面请求重定向到登录页
 			if len(c.Request.URL.Path) > 4 && c.Request.URL.Path[:4] == "/api" {
 				c.JSON(http.StatusUnauthorized, gin.H{
 					"success": false,
-					"error":   "Token 无效",
+					"error":   "未授权访问",
+				})
+			} else {
+				c.Redirect(http.StatusTemporaryRedirect, "/login")
+			}
+			c.Abort()
+			return
+		}
+
+		// 验证 MD5 密码（不实际解密，只检查是否匹配）
+		// 前端发送的是 MD5(密码)，我们需要比较存储的密码的 MD5
+		expectedMd5 := md5sum(h.adminPassword)
+		if md5Password != expectedMd5 {
+			if len(c.Request.URL.Path) > 4 && c.Request.URL.Path[:4] == "/api" {
+				c.JSON(http.StatusUnauthorized, gin.H{
+					"success": false,
+					"error":   "密码错误",
 				})
 			} else {
 				c.Redirect(http.StatusTemporaryRedirect, "/login")
@@ -205,13 +200,11 @@ func (h *AdminHandler) authMiddleware() gin.HandlerFunc {
 	}
 }
 
-// generateToken 生成随机 token
-func generateToken() (string, error) {
-	bytes := make([]byte, 32)
-	if _, err := rand.Read(bytes); err != nil {
-		return "", err
-	}
-	return hex.EncodeToString(bytes), nil
+// md5sum 计算字符串的 MD5 值
+func md5sum(s string) string {
+	h := md5.New()
+	h.Write([]byte(s))
+	return hex.EncodeToString(h.Sum(nil))
 }
 
 // handleLoginPage 处理登录页面
@@ -244,35 +237,16 @@ func (h *AdminHandler) handleLogin(c *gin.Context) {
 		return
 	}
 
-	// 生成 token
-	token, err := generateToken()
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"success": false,
-			"message": "生成 token 失败",
-		})
-		return
-	}
-
-	// 保存 token
-	h.activeTokens[token] = true
-
-	// 设置 cookie（30 天过期）
-	c.SetCookie("admin_token", token, 3600*24*30, "/", "", false, true)
-
+	// 登录成功，前端会存储 MD5 密码
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"message": "登录成功",
-		"token":   token,
 	})
 }
 
 // handleLogout 处理登出请求
 func (h *AdminHandler) handleLogout(c *gin.Context) {
-	token := c.GetHeader("X-Admin-Token")
-	if token != "" {
-		delete(h.activeTokens, token)
-	}
+	// 前端会清除 localStorage 中的 MD5 密码
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"message": "登出成功",
