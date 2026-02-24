@@ -9,12 +9,12 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/taalas/chatjimmy2api/config"
-	"github.com/taalas/chatjimmy2api/internal/client"
-	"github.com/taalas/chatjimmy2api/internal/logger"
-	"github.com/taalas/chatjimmy2api/internal/metrics"
-	"github.com/taalas/chatjimmy2api/internal/stream"
-	"github.com/taalas/chatjimmy2api/internal/transform"
-	"github.com/taalas/chatjimmy2api/internal/types"
+	"github.com/taalas/chatjimmy2api/pkg/client"
+	"github.com/taalas/chatjimmy2api/pkg/logger"
+	"github.com/taalas/chatjimmy2api/pkg/metrics"
+	"github.com/taalas/chatjimmy2api/pkg/stream"
+	"github.com/taalas/chatjimmy2api/pkg/transform"
+	"github.com/taalas/chatjimmy2api/pkg/types"
 )
 
 // APIHandler API 处理器

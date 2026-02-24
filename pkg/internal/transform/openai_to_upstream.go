@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"strings"
 
-	"github.com/taalas/chatjimmy2api/internal/types"
+	"github.com/taalas/chatjimmy2api/pkg/types"
 )
 
 // UpstreamChatOptions 上游聊天选项

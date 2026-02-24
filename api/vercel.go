@@ -5,11 +5,11 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
-	"github.com/taalas/chatjimmy2api/config"
-	"github.com/taalas/chatjimmy2api/internal/client"
-	"github.com/taalas/chatjimmy2api/internal/handler"
-	"github.com/taalas/chatjimmy2api/internal/logger"
-	"github.com/taalas/chatjimmy2api/internal/metrics"
+	"github.com/taalas/chatjimmy2api/pkg/config"
+	"github.com/taalas/chatjimmy2api/pkg/client"
+	"github.com/taalas/chatjimmy2api/pkg/handler"
+	"github.com/taalas/chatjimmy2api/pkg/logger"
+	"github.com/taalas/chatjimmy2api/pkg/metrics"
 )
 
 var router *gin.Engine

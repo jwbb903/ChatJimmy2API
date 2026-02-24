@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"strings"
 
-	"github.com/taalas/chatjimmy2api/internal/types"
+	"github.com/taalas/chatjimmy2api/pkg/types"
 )
 
 // ParsedUpstreamEvent 解析后的上游事件
