@@ -1,9 +1,9 @@
 {
   "version": 2,
-  "buildCommand": "cp api/go.mod ./go.mod && cp api/go.sum ./go.sum && mkdir -p conf && cp conf/config.json conf/config.json",
+  "buildCommand": "cp api/go.mod ./go.mod && cp api/go.sum ./go.sum",
   "outputDirectory": "public",
   "functions": {
-    "api/*.go": {
+    "api/vercel.go": {
       "maxDuration": 300
     }
   },
