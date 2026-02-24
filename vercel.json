@@ -1,0 +1,52 @@
+{
+  "version": 2,
+  "buildCommand": "cp api/go.mod ./go.mod && cp api/go.sum ./go.sum",
+  "outputDirectory": "public",
+  "functions": {
+    "api/*.go": {
+      "maxDuration": 300
+    }
+  },
+  "routes": [
+    {
+      "src": "/v1/(.*)",
+      "dest": "/api/vercel.go"
+    },
+    {
+      "src": "/health",
+      "dest": "/api/vercel.go"
+    },
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/vercel.go"
+    },
+    {
+      "src": "/login",
+      "dest": "/public/index.html"
+    },
+    {
+      "src": "/dashboard",
+      "dest": "/public/dashboard.html"
+    },
+    {
+      "src": "/config",
+      "dest": "/public/config.html"
+    },
+    {
+      "src": "/stats",
+      "dest": "/public/stats.html"
+    },
+    {
+      "src": "/logs",
+      "dest": "/public/logs.html"
+    },
+    {
+      "src": "/",
+      "dest": "/public/index.html"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/public/$1"
+    }
+  ]
+}

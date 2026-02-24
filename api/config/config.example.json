@@ -1,0 +1,23 @@
+{
+  "upstream_base_url": "https://chatjimmy.ai",
+  "upstream_api_key": "",
+  "upstream_timeout_ms": 15000,
+  "upstream_max_retries": 2,
+  "upstream_prefill_token_limit": 6064,
+  "upstream_request_byte_limit": 1200000,
+  "experimental_tool_usage": false,
+  "host": "127.0.0.1",
+  "port": 8787,
+  "default_stream": false,
+  "wrapper_api_key": "local-wrapper-key",
+  "body_limit_mb": 25,
+  "stream_mode": "fake",
+  "fake_stream_delay_ms": 50,
+  "batch_stream_size": 100,
+  "admin_enabled": true,
+  "admin_host": "127.0.0.1",
+  "admin_port": 8788,
+  "log_file": "logs/server.log",
+  "stats_file": "data/stats.json",
+  "stats_flush_interval_sec": 30
+}

@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>配置管理 - ChatJimmy2API</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <noscript>
+        <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round&display=swap" rel="stylesheet">
+    </noscript>
+    <style>
+        :root {
+            --md-sys-color-primary: #6750A4;
+            --md-sys-color-on-primary: #FFFFFF;
+            --md-sys-color-primary-container: #EADDFF;
+            --md-sys-color-on-primary-container: #21005D;
+            --md-sys-color-secondary: #625B71;
+            --md-sys-color-secondary-container: #E8DEF8;
+            --md-sys-color-tertiary: #7D5260;
+            --md-sys-color-tertiary-container: #FFD8E4;
+            --md-sys-color-background: rgba(20, 20, 30, 0.85);
+            --md-sys-color-surface: rgba(30, 30, 45, 0.85);
+            --md-sys-color-surface-variant: rgba(50, 50, 70, 0.6);
+            --md-sys-color-on-surface: #E6E1E5;
+            --md-sys-color-on-surface-variant: #CAC4D0;
+            --md-sys-color-outline: rgba(202, 196, 208, 0.4);
+            --md-sys-color-error: #F44336;
+            --md-sys-color-success: #4CAF50;
+            --md-elevation-1: 0 1px 3px rgba(0,0,0,0.3);
+            --md-elevation-2: 0 3px 6px rgba(0,0,0,0.4);
+            --md-elevation-3: 0 8px 16px rgba(0,0,0,0.5);
+            --md-shape-corner-small: 8px;
+            --md-shape-corner-medium: 12px;
+            --md-shape-corner-large: 16px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, rgba(20, 20, 30, 0.85), rgba(30, 30, 50, 0.85)),
+                        url('https://www.loliapi.com/acg/');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: var(--md-sys-color-on-surface);
+        }
+
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 280px;
+            height: 100vh;
+            background: var(--md-sys-color-surface);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-right: 1px solid var(--md-sys-color-outline);
+            padding: 24px 16px;
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0 12px 24px;
+            border-bottom: 1px solid var(--md-sys-color-outline);
+        }
+
+        .sidebar-logo {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--md-sys-color-primary), #9C7FEA);
+            border-radius: var(--md-shape-corner-small);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sidebar-logo .material-icons-round { font-size: 24px; color: var(--md-sys-color-on-primary); }
+        .sidebar-title { font-size: 18px; font-weight: 500; }
+
+        .nav-menu { flex: 1; padding-top: 16px; }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 16px;
+            border-radius: var(--md-shape-corner-medium);
+            color: var(--md-sys-color-on-surface-variant);
+            text-decoration: none;
+            transition: all 0.2s ease;
+            margin-bottom: 4px;
+            cursor: pointer;
+        }
+
+        .nav-item:hover { background: var(--md-sys-color-surface-variant); }
+        .nav-item.active { background: var(--md-sys-color-primary-container); color: var(--md-sys-color-on-primary-container); }
+        .nav-item .material-icons-round { font-size: 24px; }
+        .nav-item span { font-size: 14px; font-weight: 500; }
+
+        .sidebar-footer { border-top: 1px solid var(--md-sys-color-outline); padding-top: 16px; }
+
+        .main-content {
+            margin-left: 280px;
+            padding: 24px 32px;
+            min-height: 100vh;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+
+        .header-title { font-size: 28px; font-weight: 500; }
+
+        .header-actions { display: flex; align-items: center; gap: 12px; }
+
+        .icon-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: none;
+            background: var(--md-sys-color-surface-variant);
+            color: var(--md-sys-color-on-surface);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .icon-btn:hover { background: rgba(202, 196, 208, 0.3); }
+
+        .content-card {
+            background: var(--md-sys-color-surface);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: var(--md-shape-corner-large);
+            padding: 24px;
+            border: 1px solid var(--md-sys-color-outline);
+            margin-bottom: 24px;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .card-title { font-size: 18px; font-weight: 500; }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: var(--md-shape-corner-medium);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--md-sys-color-primary);
+            color: var(--md-sys-color-on-primary);
+        }
+
+        .btn-primary:hover { background: #7E6BB8; }
+
+        .btn-secondary {
+            background: var(--md-sys-color-secondary-container);
+            color: var(--md-sys-color-on-primary-container);
+        }
+
+        .btn-secondary:hover { background: rgba(232, 222, 248, 0.8); }
+
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        .form-section { margin-bottom: 24px; }
+
+        .section-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--md-sys-color-primary);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title .material-icons-round { font-size: 18px; }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+        }
+
+        .form-group { margin-bottom: 16px; }
+
+        .form-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--md-sys-color-on-surface-variant);
+            margin-bottom: 6px;
+        }
+
+        .form-input, .form-select {
+            width: 100%;
+            padding: 12px 16px;
+            background: var(--md-sys-color-surface-variant);
+            border: 2px solid transparent;
+            border-radius: var(--md-shape-corner-medium);
+            color: var(--md-sys-color-on-surface);
+            font-size: 14px;
+            transition: all 0.2s ease;
+            outline: none;
+        }
+
+        .form-input:focus, .form-select:focus {
+            border-color: var(--md-sys-color-primary);
+            background: rgba(50, 50, 70, 0.8);
+        }
+
+        .form-input::placeholder { color: var(--md-sys-color-on-surface-variant); }
+
+        .form-hint {
+            font-size: 12px;
+            color: var(--md-sys-color-on-surface-variant);
+            margin-top: 4px;
+        }
+
+        .toggle-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--md-sys-color-outline);
+        }
+
+        .toggle-row:last-child { border-bottom: none; }
+
+        .toggle-label {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .toggle-title { font-size: 14px; font-weight: 500; }
+        .toggle-desc { font-size: 12px; color: var(--md-sys-color-on-surface-variant); }
+
+        .switch {
+            position: relative;
+            width: 52px;
+            height: 32px;
+        }
+
+        .switch input { opacity: 0; width: 0; height: 0; }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: var(--md-sys-color-surface-variant);
+            transition: 0.3s;
+            border-radius: 32px;
+            border: 2px solid var(--md-sys-color-outline);
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 6px;
+            bottom: 6px;
+            background-color: var(--md-sys-color-on-surface-variant);
+            transition: 0.3s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--md-sys-color-primary);
+            border-color: var(--md-sys-color-primary);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(20px);
+            background-color: var(--md-sys-color-on-primary);
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--md-sys-color-surface);
+            backdrop-filter: blur(20px);
+            padding: 16px 24px;
+            border-radius: var(--md-shape-corner-large);
+            border: 1px solid var(--md-sys-color-outline);
+            box-shadow: var(--md-elevation-3);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 1000;
+            transition: transform 0.3s ease;
+        }
+
+        .toast.show { transform: translateX(-50%) translateY(0); }
+        .toast.success { border-color: var(--md-sys-color-success); }
+        .toast.error { border-color: var(--md-sys-color-error); }
+
+        .menu-toggle {
+            display: none;
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            z-index: 200;
+            width: 48px;
+            height: 48px;
+            border-radius: var(--md-shape-corner-medium);
+            border: none;
+            background: var(--md-sys-color-surface);
+            color: var(--md-sys-color-on-surface);
+            cursor: pointer;
+            box-shadow: var(--md-elevation-2);
+        }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 99;
+        }
+
+        .overlay.show { display: block; }
+
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.open { transform: translateX(0); }
+            .main-content { margin-left: 0; padding: 80px 16px 24px; }
+            .menu-toggle { display: flex; align-items: center; justify-content: center; }
+            .form-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <button class="menu-toggle" onclick="toggleSidebar()">
+        <span class="material-icons-round">menu</span>
+    </button>
+
+    <div class="overlay" onclick="toggleSidebar()"></div>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">
+                <span class="material-icons-round">api</span>
+            </div>
+            <span class="sidebar-title">ChatJimmy2API</span>
+        </div>
+
+        <nav class="nav-menu">
+            <a href="/dashboard" class="nav-item">
+                <span class="material-icons-round">dashboard</span>
+                <span>仪表盘</span>
+            </a>
+            <a href="/config" class="nav-item active">
+                <span class="material-icons-round">settings</span>
+                <span>配置管理</span>
+            </a>
+            <a href="/stats" class="nav-item">
+                <span class="material-icons-round">bar_chart</span>
+                <span>统计分析</span>
+            </a>
+            <a href="/logs" class="nav-item">
+                <span class="material-icons-round">receipt_long</span>
+                <span>系统日志</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <a href="#" class="nav-item" onclick="logout(event)">
+                <span class="material-icons-round">logout</span>
+                <span>退出登录</span>
+            </a>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <header class="header">
+            <h1 class="header-title">配置管理</h1>
+            <div class="header-actions">
+                <button class="btn btn-secondary" onclick="resetConfig()">
+                    <span class="material-icons-round">undo</span>
+                    <span>重置</span>
+                </button>
+                <button class="btn btn-primary" onclick="saveConfig()" id="save-btn">
+                    <span class="material-icons-round">save</span>
+                    <span>保存</span>
+                </button>
+            </div>
+        </header>
+
+        <div class="content-card">
+            <div class="card-header">
+                <h2 class="card-title">服务配置</h2>
+            </div>
+
+            <form id="config-form">
+                <div class="form-section">
+                    <div class="section-title">
+                        <span class="material-icons-round">cloud</span>
+                        上游服务配置
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">上游服务地址</label>
+                            <input type="text" class="form-input" id="upstream_base_url" placeholder="https://chatjimmy.ai">
+                            <div class="form-hint">上游 API 服务的基础 URL</div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">上游 API 密钥</label>
+                            <input type="text" class="form-input" id="upstream_api_key" placeholder="可选">
+                            <div class="form-hint">如果上游服务需要认证</div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">超时时间 (ms)</label>
+                            <input type="number" class="form-input" id="upstream_timeout_ms" min="1000" max="300000">
+                            <div class="form-hint">范围：1000-300000</div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">最大重试次数</label>
+                            <input type="number" class="form-input" id="upstream_max_retries" min="0" max="10">
+                            <div class="form-hint">范围：0-10</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="section-title">
+                        <span class="material-icons-round">dns</span>
+                        本地服务配置
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">API 密钥</label>
+                            <input type="text" class="form-input" id="wrapper_api_key">
+                            <div class="form-hint">用于客户端认证的密钥</div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">API 端口</label>
+                            <input type="number" class="form-input" id="port" min="1" max="65535">
+                            <div class="form-hint">范围：1-65535</div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">请求体限制 (MB)</label>
+                            <input type="number" class="form-input" id="body_limit_mb" min="1" max="512">
+                            <div class="form-hint">范围：1-512</div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">默认启用流式</label>
+                            <select class="form-select" id="default_stream">
+                                <option value="false">否</option>
+                                <option value="true">是</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="section-title">
+                        <span class="material-icons-round">flowchart</span>
+                        流式输出配置
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">流式模式</label>
+                            <select class="form-select" id="stream_mode">
+                                <option value="fake">Fake 模式（按词分割）</option>
+                                <option value="batch">Batch 模式（按字符分割）</option>
+                            </select>
+                            <div class="form-hint">Fake 模式模拟打字机效果，Batch 模式适合大段文本</div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Fake 流延迟 (ms)</label>
+                            <input type="number" class="form-input" id="fake_stream_delay_ms" min="10" max="1000">
+                            <div class="form-hint">范围：10-1000</div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Batch 流块大小</label>
+                            <input type="number" class="form-input" id="batch_stream_size" min="10" max="10000">
+                            <div class="form-hint">范围：10-10000</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="section-title">
+                        <span class="material-icons-round">admin_panel_settings</span>
+                        管理界面配置
+                    </div>
+                    <div class="toggle-row">
+                        <div class="toggle-label">
+                            <span class="toggle-title">启用管理界面</span>
+                            <span class="toggle-desc">允许通过 Web 界面管理配置</span>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="admin_enabled">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="form-grid" style="margin-top: 16px;">
+                        <div class="form-group">
+                            <label class="form-label">管理界面端口</label>
+                            <input type="number" class="form-input" id="admin_port" min="1" max="65535">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="section-title">
+                        <span class="material-icons-round">storage</span>
+                        日志与存储配置
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">日志文件路径</label>
+                            <input type="text" class="form-input" id="log_file" placeholder="logs/server.log">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">统计文件路径</label>
+                            <input type="text" class="form-input" id="stats_file" placeholder="data/stats.json">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">统计刷新间隔 (秒)</label>
+                            <input type="number" class="form-input" id="stats_flush_interval_sec" min="5" max="300">
+                            <div class="form-hint">范围：5-300</div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <div class="toast" id="toast">
+        <span class="material-icons-round" id="toast-icon">check_circle</span>
+        <span id="toast-message">配置已保存</span>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('admin_token');
+        if (!token) {
+            window.location.href = '/index.html';
+        }
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+            document.querySelector('.overlay').classList.toggle('show');
+        }
+
+        function logout(e) {
+            e.preventDefault();
+            localStorage.removeItem('admin_token');
+            window.location.href = '/index.html';
+        }
+
+        async function loadConfig() {
+            try {
+                const response = await fetch('/api/config', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    const config = await response.json();
+                    fillForm(config);
+                }
+            } catch (error) {
+                showToast('加载配置失败：' + error.message, 'error');
+            }
+        }
+
+        function fillForm(config) {
+            document.getElementById('upstream_base_url').value = config.upstream_base_url || '';
+            document.getElementById('upstream_api_key').value = config.upstream_api_key || '';
+            document.getElementById('upstream_timeout_ms').value = config.upstream_timeout_ms || 15000;
+            document.getElementById('upstream_max_retries').value = config.upstream_max_retries || 2;
+            document.getElementById('wrapper_api_key').value = config.wrapper_api_key || '';
+            document.getElementById('port').value = config.port || 8787;
+            document.getElementById('body_limit_mb').value = config.body_limit_mb || 25;
+            document.getElementById('default_stream').value = String(config.default_stream || false);
+            document.getElementById('stream_mode').value = config.stream_mode || 'fake';
+            document.getElementById('fake_stream_delay_ms').value = config.fake_stream_delay_ms || 50;
+            document.getElementById('batch_stream_size').value = config.batch_stream_size || 100;
+            document.getElementById('admin_enabled').checked = config.admin_enabled !== false;
+            document.getElementById('admin_port').value = config.admin_port || 8788;
+            document.getElementById('log_file').value = config.log_file || 'logs/server.log';
+            document.getElementById('stats_file').value = config.stats_file || 'data/stats.json';
+            document.getElementById('stats_flush_interval_sec').value = config.stats_flush_interval_sec || 30;
+        }
+
+        function getConfig() {
+            return {
+                upstream_base_url: document.getElementById('upstream_base_url').value,
+                upstream_api_key: document.getElementById('upstream_api_key').value,
+                upstream_timeout_ms: parseInt(document.getElementById('upstream_timeout_ms').value) || 15000,
+                upstream_max_retries: parseInt(document.getElementById('upstream_max_retries').value) || 2,
+                wrapper_api_key: document.getElementById('wrapper_api_key').value,
+                port: parseInt(document.getElementById('port').value) || 8787,
+                body_limit_mb: parseInt(document.getElementById('body_limit_mb').value) || 25,
+                default_stream: document.getElementById('default_stream').value === 'true',
+                stream_mode: document.getElementById('stream_mode').value,
+                fake_stream_delay_ms: parseInt(document.getElementById('fake_stream_delay_ms').value) || 50,
+                batch_stream_size: parseInt(document.getElementById('batch_stream_size').value) || 100,
+                admin_enabled: document.getElementById('admin_enabled').checked,
+                admin_port: parseInt(document.getElementById('admin_port').value) || 8788,
+                log_file: document.getElementById('log_file').value,
+                stats_file: document.getElementById('stats_file').value,
+                stats_flush_interval_sec: parseInt(document.getElementById('stats_flush_interval_sec').value) || 30
+            };
+        }
+
+        async function saveConfig() {
+            const btn = document.getElementById('save-btn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="material-icons-round">hourglass_empty</span><span>保存中...</span>';
+
+            try {
+                const config = getConfig();
+                const response = await fetch('/api/config', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(config)
+                });
+
+                if (response.ok) {
+                    showToast('配置已保存并生效', 'success');
+                } else {
+                    const data = await response.json();
+                    throw new Error(data.message || '保存失败');
+                }
+            } catch (error) {
+                showToast('保存失败：' + error.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<span class="material-icons-round">save</span><span>保存</span>';
+            }
+        }
+
+        function resetConfig() {
+            if (confirm('确定要重置为当前保存的配置吗？未保存的更改将丢失。')) {
+                loadConfig();
+            }
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const toastIcon = document.getElementById('toast-icon');
+            const toastMessage = document.getElementById('toast-message');
+
+            toast.className = 'toast ' + type;
+            toastIcon.textContent = type === 'success' ? 'check_circle' : 'error';
+            toastMessage.textContent = message;
+            toast.classList.add('show');
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        loadConfig();
+    </script>
+</body>
+</html>

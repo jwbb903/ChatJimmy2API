@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>统计分析 - ChatJimmy2API</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <noscript>
+        <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round&display=swap" rel="stylesheet">
+    </noscript>
+    <style>
+        :root {
+            --md-sys-color-primary: #6750A4;
+            --md-sys-color-on-primary: #FFFFFF;
+            --md-sys-color-primary-container: #EADDFF;
+            --md-sys-color-on-primary-container: #21005D;
+            --md-sys-color-secondary: #625B71;
+            --md-sys-color-secondary-container: #E8DEF8;
+            --md-sys-color-tertiary: #7D5260;
+            --md-sys-color-tertiary-container: #FFD8E4;
+            --md-sys-color-background: rgba(20, 20, 30, 0.85);
+            --md-sys-color-surface: rgba(30, 30, 45, 0.85);
+            --md-sys-color-surface-variant: rgba(50, 50, 70, 0.6);
+            --md-sys-color-on-surface: #E6E1E5;
+            --md-sys-color-on-surface-variant: #CAC4D0;
+            --md-sys-color-outline: rgba(202, 196, 208, 0.4);
+            --md-sys-color-error: #F44336;
+            --md-sys-color-success: #4CAF50;
+            --md-sys-color-warning: #FF9800;
+            --md-sys-color-info: #2196F3;
+            --md-elevation-1: 0 1px 3px rgba(0,0,0,0.3);
+            --md-elevation-2: 0 3px 6px rgba(0,0,0,0.4);
+            --md-elevation-3: 0 8px 16px rgba(0,0,0,0.5);
+            --md-shape-corner-small: 8px;
+            --md-shape-corner-medium: 12px;
+            --md-shape-corner-large: 16px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, rgba(20, 20, 30, 0.85), rgba(30, 30, 50, 0.85)),
+                        url('https://www.loliapi.com/acg/');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: var(--md-sys-color-on-surface);
+        }
+
+        .sidebar {
+            position: fixed;
+            left: 0; top: 0;
+            width: 280px; height: 100vh;
+            background: var(--md-sys-color-surface);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-right: 1px solid var(--md-sys-color-outline);
+            padding: 24px 16px;
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0 12px 24px;
+            border-bottom: 1px solid var(--md-sys-color-outline);
+        }
+
+        .sidebar-logo {
+            width: 40px; height: 40px;
+            background: linear-gradient(135deg, var(--md-sys-color-primary), #9C7FEA);
+            border-radius: var(--md-shape-corner-small);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sidebar-logo .material-icons-round { font-size: 24px; color: var(--md-sys-color-on-primary); }
+        .sidebar-title { font-size: 18px; font-weight: 500; }
+
+        .nav-menu { flex: 1; padding-top: 16px; }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 16px;
+            border-radius: var(--md-shape-corner-medium);
+            color: var(--md-sys-color-on-surface-variant);
+            text-decoration: none;
+            transition: all 0.2s ease;
+            margin-bottom: 4px;
+            cursor: pointer;
+        }
+
+        .nav-item:hover { background: var(--md-sys-color-surface-variant); }
+        .nav-item.active { background: var(--md-sys-color-primary-container); color: var(--md-sys-color-on-primary-container); }
+        .nav-item .material-icons-round { font-size: 24px; }
+        .nav-item span { font-size: 14px; font-weight: 500; }
+
+        .sidebar-footer { border-top: 1px solid var(--md-sys-color-outline); padding-top: 16px; }
+
+        .main-content {
+            margin-left: 280px;
+            padding: 24px 32px;
+            min-height: 100vh;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+
+        .header-title { font-size: 28px; font-weight: 500; }
+
+        .header-actions { display: flex; align-items: center; gap: 12px; }
+
+        .icon-btn {
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            border: none;
+            background: var(--md-sys-color-surface-variant);
+            color: var(--md-sys-color-on-surface);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .icon-btn:hover { background: rgba(202, 196, 208, 0.3); }
+
+        .content-card {
+            background: var(--md-sys-color-surface);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: var(--md-shape-corner-large);
+            padding: 24px;
+            border: 1px solid var(--md-sys-color-outline);
+            margin-bottom: 24px;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .card-title { font-size: 18px; font-weight: 500; }
+
+        .stats-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-item {
+            background: var(--md-sys-color-surface-variant);
+            border-radius: var(--md-shape-corner-medium);
+            padding: 20px;
+            text-align: center;
+        }
+
+        .stat-icon {
+            width: 48px; height: 48px;
+            margin: 0 auto 12px;
+            border-radius: var(--md-shape-corner-medium);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .stat-icon.primary { background: var(--md-sys-color-primary-container); color: var(--md-sys-color-on-primary-container); }
+        .stat-icon.success { background: rgba(76, 175, 80, 0.2); color: var(--md-sys-color-success); }
+        .stat-icon.error { background: rgba(244, 67, 54, 0.2); color: var(--md-sys-color-error); }
+        .stat-icon.warning { background: rgba(255, 152, 0, 0.2); color: var(--md-sys-color-warning); }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: var(--md-sys-color-on-surface-variant);
+        }
+
+        /* 进度条 */
+        .progress-section { margin-bottom: 20px; }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .progress-label {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .progress-value {
+            font-size: 14px;
+            color: var(--md-sys-color-on-surface-variant);
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: var(--md-sys-color-surface-variant);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        .progress-fill.primary { background: var(--md-sys-color-primary); }
+        .progress-fill.success { background: var(--md-sys-color-success); }
+        .progress-fill.error { background: var(--md-sys-color-error); }
+        .progress-fill.warning { background: var(--md-sys-color-warning); }
+
+        /* 模型列表 */
+        .model-list {
+            list-style: none;
+        }
+
+        .model-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px;
+            border-radius: var(--md-shape-corner-medium);
+            background: var(--md-sys-color-surface-variant);
+            margin-bottom: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .model-item:hover {
+            background: rgba(50, 50, 70, 0.8);
+        }
+
+        .model-icon {
+            width: 48px; height: 48px;
+            background: var(--md-sys-color-primary-container);
+            color: var(--md-sys-color-on-primary-container);
+            border-radius: var(--md-shape-corner-medium);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .model-icon .material-icons-round { font-size: 24px; }
+
+        .model-info { flex: 1; }
+
+        .model-name {
+            font-size: 15px;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .model-stats {
+            font-size: 13px;
+            color: var(--md-sys-color-on-surface-variant);
+        }
+
+        .model-usage {
+            text-align: right;
+            min-width: 80px;
+        }
+
+        .model-count {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--md-sys-color-primary);
+        }
+
+        .model-percent {
+            font-size: 12px;
+            color: var(--md-sys-color-on-surface-variant);
+        }
+
+        /* 错误统计 */
+        .error-list {
+            list-style: none;
+        }
+
+        .error-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            background: rgba(244, 67, 54, 0.1);
+            border: 1px solid rgba(244, 67, 54, 0.3);
+            border-radius: var(--md-shape-corner-medium);
+            margin-bottom: 8px;
+        }
+
+        .error-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .error-icon {
+            color: var(--md-sys-color-error);
+        }
+
+        .error-text {
+            font-size: 14px;
+        }
+
+        .error-count {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--md-sys-color-error);
+        }
+
+        /* 时间范围选择 */
+        .time-range {
+            display: flex;
+            gap: 8px;
+        }
+
+        .time-btn {
+            padding: 8px 16px;
+            border: 1px solid var(--md-sys-color-outline);
+            background: transparent;
+            color: var(--md-sys-color-on-surface-variant);
+            border-radius: var(--md-shape-corner-medium);
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .time-btn:hover {
+            background: var(--md-sys-color-surface-variant);
+        }
+
+        .time-btn.active {
+            background: var(--md-sys-color-primary);
+            color: var(--md-sys-color-on-primary);
+            border-color: var(--md-sys-color-primary);
+        }
+
+        .menu-toggle {
+            display: none;
+            position: fixed;
+            top: 16px; left: 16px;
+            z-index: 200;
+            width: 48px; height: 48px;
+            border-radius: var(--md-shape-corner-medium);
+            border: none;
+            background: var(--md-sys-color-surface);
+            color: var(--md-sys-color-on-surface);
+            cursor: pointer;
+            box-shadow: var(--md-elevation-2);
+        }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 99;
+        }
+
+        .overlay.show { display: block; }
+
+        .empty-state {
+            text-align: center;
+            padding: 48px 24px;
+            color: var(--md-sys-color-on-surface-variant);
+        }
+
+        .empty-state .material-icons-round {
+            font-size: 64px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.open { transform: translateX(0); }
+            .main-content { margin-left: 0; padding: 80px 16px 24px; }
+            .menu-toggle { display: flex; align-items: center; justify-content: center; }
+            .header { flex-direction: column; align-items: flex-start; gap: 16px; }
+            .time-range { flex-wrap: wrap; }
+        }
+    </style>
+</head>
+<body>
+    <button class="menu-toggle" onclick="toggleSidebar()">
+        <span class="material-icons-round">menu</span>
+    </button>
+
+    <div class="overlay" onclick="toggleSidebar()"></div>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">
+                <span class="material-icons-round">api</span>
+            </div>
+            <span class="sidebar-title">ChatJimmy2API</span>
+        </div>
+
+        <nav class="nav-menu">
+            <a href="/dashboard" class="nav-item">
+                <span class="material-icons-round">dashboard</span>
+                <span>仪表盘</span>
+            </a>
+            <a href="/config" class="nav-item">
+                <span class="material-icons-round">settings</span>
+                <span>配置管理</span>
+            </a>
+            <a href="/stats" class="nav-item active">
+                <span class="material-icons-round">bar_chart</span>
+                <span>统计分析</span>
+            </a>
+            <a href="/logs" class="nav-item">
+                <span class="material-icons-round">receipt_long</span>
+                <span>系统日志</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <a href="#" class="nav-item" onclick="logout(event)">
+                <span class="material-icons-round">logout</span>
+                <span>退出登录</span>
+            </a>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <header class="header">
+            <h1 class="header-title">统计分析</h1>
+            <div class="header-actions">
+                <div class="time-range">
+                    <button class="time-btn active" onclick="setTimeRange('all')">全部</button>
+                    <button class="time-btn" onclick="setTimeRange('today')">今天</button>
+                    <button class="time-btn" onclick="setTimeRange('week')">本周</button>
+                </div>
+                <button class="icon-btn" onclick="refreshStats()" title="刷新">
+                    <span class="material-icons-round">refresh</span>
+                </button>
+            </div>
+        </header>
+
+        <div class="content-card">
+            <div class="card-header">
+                <h2 class="card-title">概览统计</h2>
+            </div>
+
+            <div class="stats-overview">
+                <div class="stat-item">
+                    <div class="stat-icon primary">
+                        <span class="material-icons-round">http</span>
+                    </div>
+                    <div class="stat-value" id="total-requests">0</div>
+                    <div class="stat-label">总请求数</div>
+                </div>
+
+                <div class="stat-item">
+                    <div class="stat-icon success">
+                        <span class="material-icons-round">check_circle</span>
+                    </div>
+                    <div class="stat-value" id="success-requests">0</div>
+                    <div class="stat-label">成功请求</div>
+                </div>
+
+                <div class="stat-item">
+                    <div class="stat-icon error">
+                        <span class="material-icons-round">error</span>
+                    </div>
+                    <div class="stat-value" id="failed-requests">0</div>
+                    <div class="stat-label">失败请求</div>
+                </div>
+
+                <div class="stat-item">
+                    <div class="stat-icon warning">
+                        <span class="material-icons-round">token</span>
+                    </div>
+                    <div class="stat-value" id="total-tokens">0</div>
+                    <div class="stat-label">Token 消耗</div>
+                </div>
+            </div>
+
+            <div class="progress-section">
+                <div class="progress-header">
+                    <span class="progress-label">成功率</span>
+                    <span class="progress-value" id="success-rate">0%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill success" id="success-bar" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="content-card">
+            <div class="card-header">
+                <h2 class="card-title">模型使用分布</h2>
+            </div>
+
+            <ul class="model-list" id="model-list">
+                <li class="empty-state">
+                    <span class="material-icons-round">insights</span>
+                    <p>暂无模型使用数据</p>
+                </li>
+            </ul>
+        </div>
+
+        <div class="content-card">
+            <div class="card-header">
+                <h2 class="card-title">错误统计</h2>
+            </div>
+
+            <ul class="error-list" id="error-list">
+                <li class="empty-state">
+                    <span class="material-icons-round">sentiment_satisfied</span>
+                    <p>暂无错误记录</p>
+                </li>
+            </ul>
+        </div>
+
+        <div class="content-card">
+            <div class="card-header">
+                <h2 class="card-title">运行统计</h2>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+                <div>
+                    <div style="font-size: 12px; color: var(--md-sys-color-on-surface-variant); margin-bottom: 4px;">启动时间</div>
+                    <div style="font-size: 14px;" id="start-time">-</div>
+                </div>
+                <div>
+                    <div style="font-size: 12px; color: var(--md-sys-color-on-surface-variant); margin-bottom: 4px;">运行时长</div>
+                    <div style="font-size: 14px;" id="uptime">-</div>
+                </div>
+                <div>
+                    <div style="font-size: 12px; color: var(--md-sys-color-on-surface-variant); margin-bottom: 4px;">最后更新</div>
+                    <div style="font-size: 14px;" id="last-update">-</div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const token = localStorage.getItem('admin_token');
+        if (!token) {
+            window.location.href = '/index.html';
+        }
+
+        let currentTimeRange = 'all';
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+            document.querySelector('.overlay').classList.toggle('show');
+        }
+
+        function logout(e) {
+            e.preventDefault();
+            localStorage.removeItem('admin_token');
+            window.location.href = '/index.html';
+        }
+
+        function setTimeRange(range) {
+            currentTimeRange = range;
+            document.querySelectorAll('.time-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.textContent.toLowerCase().includes(range === 'all' ? '全部' : range === 'today' ? '今天' : '本周'));
+            });
+            refreshStats();
+        }
+
+        async function loadStats() {
+            try {
+                const response = await fetch('/api/stats', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    updateStats(data);
+                }
+            } catch (error) {
+                console.error('加载统计数据失败:', error);
+            }
+        }
+
+        function updateStats(data) {
+            // 更新概览统计
+            const total = data.total_requests || 0;
+            const success = data.success_requests || 0;
+            const failed = data.failed_requests || 0;
+            const tokens = data.total_tokens || 0;
+
+            document.getElementById('total-requests').textContent = total.toLocaleString();
+            document.getElementById('success-requests').textContent = success.toLocaleString();
+            document.getElementById('failed-requests').textContent = failed.toLocaleString();
+            document.getElementById('total-tokens').textContent = tokens.toLocaleString();
+
+            // 更新成功率
+            const successRate = total > 0 ? ((success / total) * 100).toFixed(1) : 0;
+            document.getElementById('success-rate').textContent = successRate + '%';
+            document.getElementById('success-bar').style.width = successRate + '%';
+
+            // 更新模型分布
+            updateModelList(data.model_stats || {});
+
+            // 更新错误统计
+            updateErrorList(data.error_stats || {});
+
+            // 更新运行统计
+            if (data.start_time) {
+                document.getElementById('start-time').textContent = new Date(data.start_time).toLocaleString('zh-CN');
+            }
+
+            if (data.uptime_seconds) {
+                document.getElementById('uptime').textContent = formatUptime(data.uptime_seconds);
+            }
+
+            document.getElementById('last-update').textContent = new Date().toLocaleString('zh-CN');
+        }
+
+        function updateModelList(modelStats) {
+            const listEl = document.getElementById('model-list');
+            const models = Object.entries(modelStats);
+
+            if (models.length === 0) {
+                listEl.innerHTML = `
+                    <li class="empty-state">
+                        <span class="material-icons-round">insights</span>
+                        <p>暂无模型使用数据</p>
+                    </li>
+                `;
+                return;
+            }
+
+            const total = models.reduce((sum, [, count]) => sum + count, 0);
+
+            listEl.innerHTML = models.map(([model, count]) => {
+                const percent = total > 0 ? ((count / total) * 100).toFixed(1) : 0;
+                return `
+                    <li class="model-item">
+                        <div class="model-icon">
+                            <span class="material-icons-round">smart_toy</span>
+                        </div>
+                        <div class="model-info">
+                            <div class="model-name">${escapeHtml(model)}</div>
+                            <div class="model-stats">${count.toLocaleString()} 次请求</div>
+                        </div>
+                        <div class="model-usage">
+                            <div class="model-count">${percent}%</div>
+                            <div class="model-percent">使用占比</div>
+                        </div>
+                    </li>
+                `;
+            }).join('');
+        }
+
+        function updateErrorList(errorStats) {
+            const listEl = document.getElementById('error-list');
+            const errors = Object.entries(errorStats);
+
+            if (errors.length === 0) {
+                listEl.innerHTML = `
+                    <li class="empty-state">
+                        <span class="material-icons-round">sentiment_satisfied</span>
+                        <p>暂无错误记录</p>
+                    </li>
+                `;
+                return;
+            }
+
+            listEl.innerHTML = errors.map(([error, count]) => `
+                <li class="error-item">
+                    <div class="error-info">
+                        <span class="material-icons-round error-icon">error</span>
+                        <span class="error-text">${escapeHtml(error)}</span>
+                    </div>
+                    <div class="error-count">${count.toLocaleString()}</div>
+                </li>
+            `).join('');
+        }
+
+        function formatUptime(seconds) {
+            const days = Math.floor(seconds / 86400);
+            const hours = Math.floor((seconds % 86400) / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+
+            if (days > 0) {
+                return `${days}天 ${hours}小时 ${minutes}分钟`;
+            } else if (hours > 0) {
+                return `${hours}小时 ${minutes}分钟`;
+            } else {
+                return `${minutes}分钟`;
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function refreshStats() {
+            loadStats();
+        }
+
+        // 初始化加载
+        loadStats();
+
+        // 每 30 秒刷新一次
+        setInterval(refreshStats, 30000);
+    </script>
+</body>
+</html>
