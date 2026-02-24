@@ -1,24 +1,24 @@
 {
   "version": 2,
-  "buildCommand": "cp api/go.mod ./go.mod && cp api/go.sum ./go.sum",
+  "buildCommand": "cp serverless/go.mod ./go.mod && cp serverless/go.sum ./go.sum",
   "outputDirectory": "public",
   "functions": {
-    "api/vercel.go": {
+    "serverless/vercel.go": {
       "maxDuration": 300
     }
   },
   "routes": [
     {
       "src": "/v1/(.*)",
-      "dest": "/api/vercel.go"
+      "dest": "/serverless/vercel.go"
     },
     {
       "src": "/health",
-      "dest": "/api/vercel.go"
+      "dest": "/serverless/vercel.go"
     },
     {
       "src": "/api/(.*)",
-      "dest": "/api/vercel.go"
+      "dest": "/serverless/vercel.go"
     },
     {
       "src": "/login",
