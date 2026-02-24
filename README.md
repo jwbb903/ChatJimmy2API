@@ -237,6 +237,19 @@ Authorization: Bearer YOUR_API_KEY
 /var/task/conf/config.json
 ```
 
+### 注意事项
+
+**Vercel 环境下的数据存储：**
+
+在 Vercel Serverless 环境下，统计数据仅存储在内存中，不会持久化到文件。这是因为：
+- Vercel 的 `/tmp` 目录在函数重启后会被清除
+- 每次函数调用都是独立的执行环境
+
+因此，在 Vercel 上：
+- 统计数据在每次函数执行时重置
+- 适合查看当前请求的统计
+- 如需持久化统计，建议使用外部数据库（如 Redis、Supabase 等）
+
 ## 注意事项
 
 1. **安全建议**
