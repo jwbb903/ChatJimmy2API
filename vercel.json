@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "cp api/go.mod ./go.mod && cp api/go.sum ./go.sum",
+  "buildCommand": "cp api/go.mod ./go.mod && cp api/go.sum ./go.sum && mkdir -p conf && cp conf/config.json conf/config.json",
   "outputDirectory": "public",
   "functions": {
     "api/*.go": {

@@ -24,7 +24,7 @@ func init() {
 	if configPath == "" {
 		// 检查是否在 Vercel 环境
 		if os.Getenv("VERCEL") == "1" {
-			configPath = "/var/task/config/config.json"
+			configPath = "/var/task/conf/config.json"
 		} else {
 			configPath = "config/config.json"
 		}

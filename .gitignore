@@ -18,8 +18,9 @@ logs/*.log.*
 # 数据文件
 data/*.json
 
-# 配置文件（保留示例）
+# 配置文件（保留示例，实际配置使用 conf/config.json）
 config/config.json
+api/config/config.json
 
 # 依赖
 vendor/
