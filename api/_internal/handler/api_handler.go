@@ -445,6 +445,15 @@ func (h *APIHandler) handleStream(c *gin.Context, resp *http.Response, model str
 	completionID := transform.MakeCompletionID()
 	created := time.Now().Unix()
 
+	// 检测是否支持 Flusher（Vercel Serverless 不支持）
+	_, supportsFlush := c.Writer.(http.Flusher)
+	
+	// 在 Serverless 环境下强制使用非流式模式
+	if !supportsFlush {
+		h.handleNonStream(c, resp, model, meta)
+		return
+	}
+
 	// 发送初始块（角色）
 	initialChunk := transform.BuildChatCompletionChunk(
 		completionID,
