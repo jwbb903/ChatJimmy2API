@@ -41,11 +41,12 @@ type Stats struct {
 
 // Manager 统计管理器
 type Manager struct {
-	stats      *Stats
-	statsFile  string
+	stats       *Stats
+	statsFile   string
 	flushInterval time.Duration
-	stopChan   chan struct{}
-	mu         sync.RWMutex
+	stopChan    chan struct{}
+	mu          sync.RWMutex
+	isVercel    bool // Vercel 环境下只使用内存存储
 }
 
 // NewManager 创建统计管理器
@@ -53,6 +54,9 @@ func NewManager(statsFile string, flushIntervalSec int) *Manager {
 	if flushIntervalSec <= 0 {
 		flushIntervalSec = 30
 	}
+
+	// 检测是否在 Vercel 环境
+	isVercel := os.Getenv("VERCEL") == "1"
 
 	m := &Manager{
 		stats: &Stats{
@@ -64,13 +68,16 @@ func NewManager(statsFile string, flushIntervalSec int) *Manager {
 		statsFile:     statsFile,
 		flushInterval: time.Duration(flushIntervalSec) * time.Second,
 		stopChan:      make(chan struct{}),
+		isVercel:      isVercel,
 	}
 
-	// 加载已有统计
-	m.load()
-
-	// 启动定时刷新协程
-	go m.flushLoop()
+	// Vercel 环境下不从文件加载，只使用内存
+	if !isVercel {
+		// 加载已有统计
+		m.load()
+		// 启动定时刷新协程
+		go m.flushLoop()
+	}
 
 	return m
 }
@@ -111,6 +118,11 @@ func (m *Manager) flushLoop() {
 
 // flush 将统计刷新到文件
 func (m *Manager) flush() {
+	// Vercel 环境下不写入文件
+	if m.isVercel {
+		return
+	}
+
 	m.mu.RLock()
 	data, err := json.MarshalIndent(m.stats, "", "  ")
 	m.mu.RUnlock()
@@ -209,7 +221,10 @@ func (m *Manager) GetAvgTokensPerRequest() float64 {
 
 // Close 关闭管理器
 func (m *Manager) Close() {
-	close(m.stopChan)
+	// Vercel 环境下没有启动 flushLoop，不需要停止
+	if !m.isVercel {
+		close(m.stopChan)
+	}
 }
 
 // Reset 重置统计（保留启动时间）
