@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jwbb903/ChatJimmy2API/api/_internal/config"
@@ -390,11 +391,125 @@ func (h *APIHandler) handleNonStream(c *gin.Context, resp *http.Response, model 
 	c.JSON(http.StatusOK, response)
 }
 
-// handleStream 处理流式响应（伪造）
+// handleStream 处理流式响应（伪流式：一次性生成所有 SSE 数据）
 func (h *APIHandler) handleStream(c *gin.Context, resp *http.Response, model string, req types.ChatCompletionRequest, meta transform.UpstreamRequestMeta) {
-	// Vercel Serverless 不支持 http.Flusher，强制使用非流式模式
-	c.Header("Content-Type", "application/json; charset=utf-8")
-	h.handleNonStream(c, resp, model, meta)
+	// 读取完整响应
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		h.metrics.RecordRequest(model, true, 0, 0, false, "502")
+		h.logger.Error("读取上游响应失败", map[string]interface{}{"error": err.Error()})
+		c.JSON(http.StatusBadGateway, gin.H{
+			"error": gin.H{
+				"message": "Failed to read upstream response.",
+				"type":    "server_error",
+				"code":    502,
+			},
+		})
+		return
+	}
+
+	// 解析上游响应
+	rawText := string(body)
+	cleanedText, prompt, completion, finishReason, hasStats := transform.ParseStatsFromText(rawText)
+
+	if cleanedText == "" && !hasStats {
+		h.metrics.RecordRequest(model, true, 0, 0, false, "422")
+		h.logger.Warn("上游返回空响应", map[string]interface{}{})
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"error": gin.H{
+				"message": "Upstream returned an empty response.",
+				"type":    "invalid_request_error",
+				"code":    422,
+			},
+		})
+		return
+	}
+
+	// 设置 SSE 头
+	c.Header("Content-Type", "text/event-stream; charset=utf-8")
+	c.Header("Cache-Control", "no-cache")
+	c.Header("Connection", "keep-alive")
+	c.Header("X-Content-Type-Options", "nosniff")
+
+	// 生成响应 ID 和时间
+	completionID := transform.MakeCompletionID()
+	created := time.Now().Unix()
+
+	// 构建所有 SSE 数据
+	var sseData strings.Builder
+
+	// 1. 初始块（角色）
+	initialChunk := transform.BuildChatCompletionChunk(
+		completionID,
+		created,
+		model,
+		types.Message{Role: types.RoleAssistant, Content: ""},
+		nil,
+		nil,
+	)
+	data, _ := json.Marshal(initialChunk)
+	sseData.WriteString("data: ")
+	sseData.Write(data)
+	sseData.WriteString("\n\n")
+
+	// 2. 内容块（一次性发送完整内容）
+	contentChunk := transform.BuildChatCompletionChunk(
+		completionID,
+		created,
+		model,
+		types.Message{Role: types.RoleAssistant, Content: &cleanedText},
+		nil,
+		nil,
+	)
+	data, _ = json.Marshal(contentChunk)
+	sseData.WriteString("data: ")
+	sseData.Write(data)
+	sseData.WriteString("\n\n")
+
+	// 3. 结束块
+	finishReasonOpenAI := transform.NormalizeFinishReason(finishReason)
+	finalChunk := transform.BuildChatCompletionChunk(
+		completionID,
+		created,
+		model,
+		types.Message{Role: types.RoleAssistant},
+		&finishReasonOpenAI,
+		nil,
+	)
+	data, _ = json.Marshal(finalChunk)
+	sseData.WriteString("data: ")
+	sseData.Write(data)
+	sseData.WriteString("\n\n")
+
+	// 4. 如果请求包含 usage，添加使用量
+	if req.StreamOptions != nil && req.StreamOptions.IncludeUsage != nil && *req.StreamOptions.IncludeUsage {
+		usage := transform.ComputeUsage(prompt, completion)
+		usageChunk := transform.BuildChatCompletionChunk(
+			completionID,
+			created,
+			model,
+			types.Message{Role: types.RoleAssistant},
+			nil,
+			&usage,
+		)
+		data, _ = json.Marshal(usageChunk)
+		sseData.WriteString("data: ")
+		sseData.Write(data)
+		sseData.WriteString("\n\n")
+	}
+
+	// 5. 发送 [DONE]
+	sseData.WriteString("data: [DONE]\n\n")
+
+	// 一次性返回所有 SSE 数据
+	c.String(http.StatusOK, sseData.String())
+
+	h.metrics.RecordRequest(model, true, prompt, completion, true, "")
+	h.logger.Info("伪流式聊天补全完成", map[string]interface{}{
+		"model":             model,
+		"prompt_tokens":     prompt,
+		"completion_tokens": completion,
+	})
 }
 
 // buildForwardHeaders 构建转发请求头
