@@ -22,7 +22,6 @@ type APIHandler struct {
 	configMgr   *config.Manager
 	metrics     *metrics.Manager
 	logger      *logger.Logger
-	streamSim   *stream.StreamSimulator
 }
 
 // NewAPIHandler 创建 API 处理器
@@ -32,17 +31,11 @@ func NewAPIHandler(
 	log *logger.Logger,
 	upstreamClient *client.ChatJimmyClient,
 ) *APIHandler {
-	cfg := cfgMgr.Get()
 	return &APIHandler{
 		client:    upstreamClient,
 		configMgr: cfgMgr,
 		metrics:   metricsMgr,
 		logger:    log,
-		streamSim: stream.NewStreamSimulator(
-			stream.StreamMode(cfg.StreamMode),
-			cfg.FakeStreamDelayMs,
-			cfg.BatchStreamSize,
-		),
 	}
 }
 
