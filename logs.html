@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>系统日志 - ChatJimmy2API</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <noscript>
+        <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round&display=swap" rel="stylesheet">
+    </noscript>
+    <style>
+        :root {
+            --md-sys-color-primary: #6750A4;
+            --md-sys-color-on-primary: #FFFFFF;
+            --md-sys-color-primary-container: #EADDFF;
+            --md-sys-color-on-primary-container: #21005D;
+            --md-sys-color-secondary: #625B71;
+            --md-sys-color-secondary-container: #E8DEF8;
+            --md-sys-color-tertiary: #7D5260;
+            --md-sys-color-tertiary-container: #FFD8E4;
+            --md-sys-color-background: rgba(20, 20, 30, 0.85);
+            --md-sys-color-surface: rgba(30, 30, 45, 0.85);
+            --md-sys-color-surface-variant: rgba(50, 50, 70, 0.6);
+            --md-sys-color-on-surface: #E6E1E5;
+            --md-sys-color-on-surface-variant: #CAC4D0;
+            --md-sys-color-outline: rgba(202, 196, 208, 0.4);
+            --md-sys-color-error: #F44336;
+            --md-sys-color-success: #4CAF50;
+            --md-sys-color-warning: #FF9800;
+            --md-sys-color-info: #2196F3;
+            --md-sys-color-debug: #9C27B0;
+            --md-elevation-1: 0 1px 3px rgba(0,0,0,0.3);
+            --md-elevation-2: 0 3px 6px rgba(0,0,0,0.4);
+            --md-elevation-3: 0 8px 16px rgba(0,0,0,0.5);
+            --md-shape-corner-small: 8px;
+            --md-shape-corner-medium: 12px;
+            --md-shape-corner-large: 16px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, rgba(20, 20, 30, 0.85), rgba(30, 30, 50, 0.85)),
+                        url('https://www.loliapi.com/acg/');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: var(--md-sys-color-on-surface);
+        }
+
+        .sidebar {
+            position: fixed;
+            left: 0; top: 0;
+            width: 280px; height: 100vh;
+            background: var(--md-sys-color-surface);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-right: 1px solid var(--md-sys-color-outline);
+            padding: 24px 16px;
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0 12px 24px;
+            border-bottom: 1px solid var(--md-sys-color-outline);
+        }
+
+        .sidebar-logo {
+            width: 40px; height: 40px;
+            background: linear-gradient(135deg, var(--md-sys-color-primary), #9C7FEA);
+            border-radius: var(--md-shape-corner-small);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sidebar-logo .material-icons-round { font-size: 24px; color: var(--md-sys-color-on-primary); }
+        .sidebar-title { font-size: 18px; font-weight: 500; }
+
+        .nav-menu { flex: 1; padding-top: 16px; }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 16px;
+            border-radius: var(--md-shape-corner-medium);
+            color: var(--md-sys-color-on-surface-variant);
+            text-decoration: none;
+            transition: all 0.2s ease;
+            margin-bottom: 4px;
+            cursor: pointer;
+        }
+
+        .nav-item:hover { background: var(--md-sys-color-surface-variant); }
+        .nav-item.active { background: var(--md-sys-color-primary-container); color: var(--md-sys-color-on-primary-container); }
+        .nav-item .material-icons-round { font-size: 24px; }
+        .nav-item span { font-size: 14px; font-weight: 500; }
+
+        .sidebar-footer { border-top: 1px solid var(--md-sys-color-outline); padding-top: 16px; }
+
+        .main-content {
+            margin-left: 280px;
+            padding: 24px 32px;
+            min-height: 100vh;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .header-title { font-size: 28px; font-weight: 500; }
+
+        .header-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+
+        .icon-btn {
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            border: none;
+            background: var(--md-sys-color-surface-variant);
+            color: var(--md-sys-color-on-surface);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .icon-btn:hover { background: rgba(202, 196, 208, 0.3); }
+        .icon-btn.active { background: var(--md-sys-color-primary); color: var(--md-sys-color-on-primary); }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: var(--md-shape-corner-medium);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--md-sys-color-primary);
+            color: var(--md-sys-color-on-primary);
+        }
+
+        .btn-primary:hover { background: #7E6BB8; }
+
+        .content-card {
+            background: var(--md-sys-color-surface);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: var(--md-shape-corner-large);
+            padding: 24px;
+            border: 1px solid var(--md-sys-color-outline);
+            margin-bottom: 24px;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .card-title { font-size: 18px; font-weight: 500; }
+
+        /* 日志级别筛选 */
+        .level-filter {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .level-btn {
+            padding: 6px 14px;
+            border: 1px solid var(--md-sys-color-outline);
+            background: transparent;
+            border-radius: var(--md-shape-corner-full);
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .level-btn:hover { background: var(--md-sys-color-surface-variant); }
+        .level-btn.active { border-color: currentColor; }
+        .level-btn.all.active { background: var(--md-sys-color-primary); color: var(--md-sys-color-on-primary); border-color: var(--md-sys-color-primary); }
+        .level-btn.info.active { background: var(--md-sys-color-info); color: white; border-color: var(--md-sys-color-info); }
+        .level-btn.success.active { background: var(--md-sys-color-success); color: white; border-color: var(--md-sys-color-success); }
+        .level-btn.warning.active { background: var(--md-sys-color-warning); color: black; border-color: var(--md-sys-color-warning); }
+        .level-btn.error.active { background: var(--md-sys-color-error); color: white; border-color: var(--md-sys-color-error); }
+        .level-btn.debug.active { background: var(--md-sys-color-debug); color: white; border-color: var(--md-sys-color-debug); }
+
+        /* 搜索框 */
+        .search-box {
+            position: relative;
+            min-width: 250px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 10px 16px 10px 44px;
+            background: var(--md-sys-color-surface-variant);
+            border: 2px solid transparent;
+            border-radius: var(--md-shape-corner-full);
+            color: var(--md-sys-color-on-surface);
+            font-size: 14px;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .search-input:focus {
+            border-color: var(--md-sys-color-primary);
+            background: rgba(50, 50, 70, 0.8);
+        }
+
+        .search-input::placeholder { color: var(--md-sys-color-on-surface-variant); }
+
+        .search-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--md-sys-color-on-surface-variant);
+            pointer-events: none;
+        }
+
+        /* 日志列表 */
+        .log-container {
+            max-height: 600px;
+            overflow-y: auto;
+            border-radius: var(--md-shape-corner-medium);
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .log-list {
+            list-style: none;
+        }
+
+        .log-item {
+            display: flex;
+            gap: 12px;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--md-sys-color-outline);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            transition: background 0.2s ease;
+        }
+
+        .log-item:last-child { border-bottom: none; }
+        .log-item:hover { background: rgba(255, 255, 255, 0.05); }
+
+        .log-time {
+            color: var(--md-sys-color-on-surface-variant);
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .log-level {
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 700;
+            font-size: 11px;
+            text-transform: uppercase;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .log-level.info { background: rgba(33, 150, 243, 0.2); color: var(--md-sys-color-info); }
+        .log-level.success { background: rgba(76, 175, 80, 0.2); color: var(--md-sys-color-success); }
+        .log-level.warning { background: rgba(255, 152, 0, 0.2); color: var(--md-sys-color-warning); }
+        .log-level.error { background: rgba(244, 67, 54, 0.2); color: var(--md-sys-color-error); }
+        .log-level.debug { background: rgba(156, 39, 176, 0.2); color: var(--md-sys-color-debug); }
+
+        .log-message {
+            color: var(--md-sys-color-on-surface);
+            word-break: break-word;
+            flex: 1;
+        }
+
+        .log-empty {
+            text-align: center;
+            padding: 48px 24px;
+            color: var(--md-sys-color-on-surface-variant);
+        }
+
+        .log-empty .material-icons-round {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        /* 分页 */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            margin-top: 20px;
+        }
+
+        .page-btn {
+            width: 36px;
+            height: 36px;
+            border: 1px solid var(--md-sys-color-outline);
+            background: transparent;
+            color: var(--md-sys-color-on-surface);
+            border-radius: var(--md-shape-corner-small);
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .page-btn:hover:not(:disabled) {
+            background: var(--md-sys-color-surface-variant);
+        }
+
+        .page-btn.active {
+            background: var(--md-sys-color-primary);
+            color: var(--md-sys-color-on-primary);
+            border-color: var(--md-sys-color-primary);
+        }
+
+        .page-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .page-info {
+            font-size: 13px;
+            color: var(--md-sys-color-on-surface-variant);
+            padding: 0 12px;
+        }
+
+        /* 自动滚动开关 */
+        .auto-scroll {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--md-sys-color-on-surface-variant);
+        }
+
+        .switch {
+            position: relative;
+            width: 44px;
+            height: 24px;
+        }
+
+        .switch input { opacity: 0; width: 0; height: 0; }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: var(--md-sys-color-surface-variant);
+            transition: 0.3s;
+            border-radius: 24px;
+            border: 2px solid var(--md-sys-color-outline);
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 2px;
+            bottom: 2px;
+            background-color: var(--md-sys-color-on-surface-variant);
+            transition: 0.3s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--md-sys-color-primary);
+            border-color: var(--md-sys-color-primary);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(20px);
+            background-color: var(--md-sys-color-on-primary);
+        }
+
+        .menu-toggle {
+            display: none;
+            position: fixed;
+            top: 16px; left: 16px;
+            z-index: 200;
+            width: 48px; height: 48px;
+            border-radius: var(--md-shape-corner-medium);
+            border: none;
+            background: var(--md-sys-color-surface);
+            color: var(--md-sys-color-on-surface);
+            cursor: pointer;
+            box-shadow: var(--md-elevation-2);
+        }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 99;
+        }
+
+        .overlay.show { display: block; }
+
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.open { transform: translateX(0); }
+            .main-content { margin-left: 0; padding: 80px 16px 24px; }
+            .menu-toggle { display: flex; align-items: center; justify-content: center; }
+            .header { flex-direction: column; align-items: flex-start; }
+            .search-box { min-width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <button class="menu-toggle" onclick="toggleSidebar()">
+        <span class="material-icons-round">menu</span>
+    </button>
+
+    <div class="overlay" onclick="toggleSidebar()"></div>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">
+                <span class="material-icons-round">api</span>
+            </div>
+            <span class="sidebar-title">ChatJimmy2API</span>
+        </div>
+
+        <nav class="nav-menu">
+            <a href="/dashboard" class="nav-item">
+                <span class="material-icons-round">dashboard</span>
+                <span>仪表盘</span>
+            </a>
+            <a href="/config" class="nav-item">
+                <span class="material-icons-round">settings</span>
+                <span>配置管理</span>
+            </a>
+            <a href="/stats" class="nav-item">
+                <span class="material-icons-round">bar_chart</span>
+                <span>统计分析</span>
+            </a>
+            <a href="/logs" class="nav-item active">
+                <span class="material-icons-round">receipt_long</span>
+                <span>系统日志</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <a href="#" class="nav-item" onclick="logout(event)">
+                <span class="material-icons-round">logout</span>
+                <span>退出登录</span>
+            </a>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <header class="header">
+            <h1 class="header-title">系统日志</h1>
+            <div class="header-actions">
+                <label class="auto-scroll">
+                    <span>自动滚动</span>
+                    <label class="switch">
+                        <input type="checkbox" id="auto-scroll" checked>
+                        <span class="slider"></span>
+                    </label>
+                </label>
+                <button class="icon-btn" id="clear-btn" onclick="clearLogs()" title="清空日志">
+                    <span class="material-icons-round">delete_sweep</span>
+                </button>
+                <button class="icon-btn" id="download-btn" onclick="downloadLogs()" title="下载日志">
+                    <span class="material-icons-round">download</span>
+                </button>
+                <button class="icon-btn" onclick="refreshLogs()" title="刷新">
+                    <span class="material-icons-round">refresh</span>
+                </button>
+            </div>
+        </header>
+
+        <div class="content-card">
+            <div class="card-header">
+                <div class="level-filter">
+                    <button class="level-btn all active" onclick="filterLevel('all')">
+                        <span class="material-icons-round" style="font-size: 16px;">filter_list</span>
+                        全部
+                    </button>
+                    <button class="level-btn debug" onclick="filterLevel('debug')">
+                        <span class="material-icons-round" style="font-size: 16px;">bug_report</span>
+                        DEBUG
+                    </button>
+                    <button class="level-btn info" onclick="filterLevel('info')">
+                        <span class="material-icons-round" style="font-size: 16px;">info</span>
+                        INFO
+                    </button>
+                    <button class="level-btn success" onclick="filterLevel('success')">
+                        <span class="material-icons-round" style="font-size: 16px;">check_circle</span>
+                        SUCCESS
+                    </button>
+                    <button class="level-btn warning" onclick="filterLevel('warning')">
+                        <span class="material-icons-round" style="font-size: 16px;">warning</span>
+                        WARN
+                    </button>
+                    <button class="level-btn error" onclick="filterLevel('error')">
+                        <span class="material-icons-round" style="font-size: 16px;">error</span>
+                        ERROR
+                    </button>
+                </div>
+
+                <div class="search-box">
+                    <span class="material-icons-round search-icon">search</span>
+                    <input type="text" class="search-input" id="search-input" placeholder="搜索日志..." oninput="searchLogs()">
+                </div>
+            </div>
+
+            <div class="log-container">
+                <ul class="log-list" id="log-list">
+                    <li class="log-empty">
+                        <span class="material-icons-round">receipt_long</span>
+                        <p>正在加载日志...</p>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="pagination" id="pagination">
+                <button class="page-btn" id="prev-btn" onclick="prevPage()" disabled>
+                    <span class="material-icons-round" style="font-size: 18px;">chevron_left</span>
+                </button>
+                <span class="page-info" id="page-info">第 1 页</span>
+                <button class="page-btn" id="next-btn" onclick="nextPage()">
+                    <span class="material-icons-round" style="font-size: 18px;">chevron_right</span>
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const token = localStorage.getItem('admin_token');
+        if (!token) {
+            window.location.href = '/index.html';
+        }
+
+        let currentLevel = 'all';
+        let currentPage = 1;
+        const pageSize = 50;
+        let allLogs = [];
+        let filteredLogs = [];
+        let autoScrollEnabled = true;
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+            document.querySelector('.overlay').classList.toggle('show');
+        }
+
+        function logout(e) {
+            e.preventDefault();
+            localStorage.removeItem('admin_token');
+            window.location.href = '/index.html';
+        }
+
+        function filterLevel(level) {
+            currentLevel = level;
+            document.querySelectorAll('.level-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.classList.contains(level) || (level === 'all' && btn.classList.contains('all')));
+            });
+            applyFilters();
+        }
+
+        function searchLogs() {
+            applyFilters();
+        }
+
+        function applyFilters() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            
+            filteredLogs = allLogs.filter(log => {
+                const levelMatch = currentLevel === 'all' || log.level === currentLevel;
+                const searchMatch = searchTerm === '' || 
+                    log.message.toLowerCase().includes(searchTerm) ||
+                    log.time.toLowerCase().includes(searchTerm);
+                return levelMatch && searchMatch;
+            });
+
+            currentPage = 1;
+            renderLogs();
+        }
+
+        function renderLogs() {
+            const listEl = document.getElementById('log-list');
+            const start = (currentPage - 1) * pageSize;
+            const end = start + pageSize;
+            const pageLogs = filteredLogs.slice(start, end);
+
+            if (pageLogs.length === 0) {
+                listEl.innerHTML = `
+                    <li class="log-empty">
+                        <span class="material-icons-round">receipt_long</span>
+                        <p>暂无日志数据</p>
+                    </li>
+                `;
+            } else {
+                listEl.innerHTML = pageLogs.map(log => `
+                    <li class="log-item">
+                        <span class="log-time">${log.time}</span>
+                        <span class="log-level ${log.level}">${log.level}</span>
+                        <span class="log-message">${escapeHtml(log.message)}</span>
+                    </li>
+                `).join('');
+
+                // 自动滚动到底部
+                if (autoScrollEnabled && currentPage === Math.ceil(filteredLogs.length / pageSize)) {
+                    const container = document.querySelector('.log-container');
+                    container.scrollTop = container.scrollHeight;
+                }
+            }
+
+            // 更新分页
+            const totalPages = Math.max(1, Math.ceil(filteredLogs.length / pageSize));
+            document.getElementById('page-info').textContent = `第 ${currentPage} / ${totalPages} 页`;
+            document.getElementById('prev-btn').disabled = currentPage <= 1;
+            document.getElementById('next-btn').disabled = currentPage >= totalPages;
+        }
+
+        function prevPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                renderLogs();
+            }
+        }
+
+        function nextPage() {
+            const totalPages = Math.ceil(filteredLogs.length / pageSize);
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderLogs();
+            }
+        }
+
+        async function loadLogs() {
+            try {
+                const response = await fetch('/api/logs', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    allLogs = (data.logs || []).map(log => ({
+                        time: formatTime(log.time),
+                        level: log.level || 'info',
+                        message: log.message || ''
+                    })).reverse();
+                    applyFilters();
+                }
+            } catch (error) {
+                console.error('加载日志失败:', error);
+                document.getElementById('log-list').innerHTML = `
+                    <li class="log-empty">
+                        <span class="material-icons-round">error</span>
+                        <p>加载日志失败</p>
+                    </li>
+                `;
+            }
+        }
+
+        function formatTime(timeStr) {
+            if (!timeStr) return '';
+            try {
+                const date = new Date(timeStr);
+                return date.toLocaleString('zh-CN', {
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
+                    hour12: false
+                });
+            } catch {
+                return timeStr;
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function refreshLogs() {
+            loadLogs();
+        }
+
+        function clearLogs() {
+            if (confirm('确定要清空日志吗？此操作不可恢复。')) {
+                allLogs = [];
+                filteredLogs = [];
+                renderLogs();
+            }
+        }
+
+        function downloadLogs() {
+            const content = filteredLogs.map(log => 
+                `[${log.time}] [${log.level.toUpperCase()}] ${log.message}`
+            ).join('\n');
+
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `chatjimmy2api-logs-${new Date().toISOString().slice(0, 10)}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // 监听自动滚动开关
+        document.getElementById('auto-scroll').addEventListener('change', (e) => {
+            autoScrollEnabled = e.target.checked;
+        });
+
+        // 初始化加载
+        loadLogs();
+
+        // 每 10 秒刷新一次日志
+        setInterval(loadLogs, 10000);
+    </script>
+</body>
+</html>
