@@ -13,41 +13,33 @@
 - 结构化 JSON 日志
 - 响应式设计，自动适应各种屏幕尺寸
 
-## 部署到 Vercel
+## 快速部署到 Vercel
 
-### 1. 准备 GitHub 仓库
+### 方法一：Fork 本项目（推荐）
 
-确保你的代码已经推送到 GitHub：
+1. **Fork 仓库**
+   - 访问 https://github.com/jwbb903/ChatJimmy2API
+   - 点击右上角的 "Fork" 按钮
+   - 等待 Fork 完成
 
-```bash
-git add .
-git commit -m "Update code"
-git push origin main
-```
+2. **在 Vercel 导入**
+   - 访问 https://vercel.com/new
+   - 点击 "Import Git Repository"
+   - 找到你 Fork 的 `ChatJimmy2API` 仓库
+   - 点击 "Import"
 
-### 2. 在 Vercel 导入项目
-
-1. 访问 https://vercel.com/new
-2. 点击 "Import Git Repository"
-3. 选择你的 GitHub 仓库
-4. 点击 "Import"
-
-### 3. 配置环境变量
+3. **配置环境变量**
 
 在 Vercel 项目设置中，添加以下环境变量：
 
 | 变量名 | 说明 | 示例值 |
 |--------|------|--------|
-| `API_KEY` | API 认证密钥（用于 /v1/* 端点） | `my-api-key-123` |
+| `API_KEY` | API 认证密钥 | `my-api-key-123` |
 | `ADMIN_PASSWORD` | 管理界面登录密码 | `my-admin-password` |
-| `DISABLE_ADMIN_API` | 是否禁用管理界面（可选） | `true` 或 `false` |
+| `DISABLE_ADMIN_API` | 禁用管理界面（可选） | `true` |
 | `CONFIG_PATH` | 配置文件路径 | `/var/task/conf/config.json` |
 
-**注意：**
-- `API_KEY` 和 `ADMIN_PASSWORD` 可以设置为相同值，也可以分开
-- 设置 `DISABLE_ADMIN_API=true` 可完全禁用管理界面 API，只保留 OpenAI API 端点
-
-### 4. 配置构建选项
+4. **配置构建选项**
 
 在 Vercel 项目设置的 "Build & Development Settings" 中：
 
@@ -55,14 +47,30 @@ git push origin main
 - **Build Command**: `cp api/go.mod ./go.mod && cp api/go.sum ./go.sum`
 - **Output Directory**: 留空
 
-### 5. 部署
+5. **部署**
 
-点击 "Deploy" 按钮开始部署。
+点击 "Deploy" 开始部署。
 
-部署完成后，你会获得一个域名：
-```
-https://your-project.vercel.app
-```
+### 方法二：手动上传代码
+
+1. **创建 GitHub 仓库**
+   - 访问 https://github.com/new
+   - 仓库名：`chatjimmy2api`
+   - 点击 "Create repository"
+
+2. **推送代码**
+   ```bash
+   git init
+   git add .
+   git commit -m "Initial commit"
+   git remote add origin https://github.com/YOUR_USERNAME/chatjimmy2api.git
+   git push -u origin main
+   ```
+
+3. **在 Vercel 部署**
+   - 访问 https://vercel.com/new
+   - 导入你的仓库
+   - 按照方法一的步骤 3-5 配置
 
 ## 本地开发
 
