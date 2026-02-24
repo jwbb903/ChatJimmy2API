@@ -8,9 +8,9 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/taalas/chatjimmy2api/config"
-	"github.com/taalas/chatjimmy2api/pkg/logger"
-	"github.com/taalas/chatjimmy2api/pkg/metrics"
+	"github.com/taalas/chatjimmy2api/api/_internal/config"
+	"github.com/taalas/chatjimmy2api/api/_internal/logger"
+	"github.com/taalas/chatjimmy2api/api/_internal/metrics"
 )
 
 // AdminHandler 管理界面处理器

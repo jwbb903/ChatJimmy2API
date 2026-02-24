@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
-	"github.com/taalas/chatjimmy2api/pkg/metrics"
+	"github.com/taalas/chatjimmy2api/api/_internal/metrics"
 )
 
 var upgrader = websocket.Upgrader{

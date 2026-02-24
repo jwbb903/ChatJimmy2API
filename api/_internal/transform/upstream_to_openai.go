@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/taalas/chatjimmy2api/pkg/types"
+	"github.com/taalas/chatjimmy2api/api/_internal/types"
 )
 
 // MakeCompletionID 生成 OpenAI 风格的完成 ID

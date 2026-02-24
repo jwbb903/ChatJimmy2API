@@ -1,4 +1,4 @@
-module github.com/taalas/chatjimmy2api
+module github.com/taalas/chatjimmy2api/api
 
 go 1.21
 

@@ -3,7 +3,7 @@ package transform
 import (
 	"testing"
 
-	"github.com/taalas/chatjimmy2api/pkg/types"
+	"github.com/taalas/chatjimmy2api/api/_internal/types"
 )
 
 func TestMakeCompletionID(t *testing.T) {

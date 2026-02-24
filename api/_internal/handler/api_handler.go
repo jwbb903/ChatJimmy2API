@@ -8,13 +8,13 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/taalas/chatjimmy2api/config"
-	"github.com/taalas/chatjimmy2api/pkg/client"
-	"github.com/taalas/chatjimmy2api/pkg/logger"
-	"github.com/taalas/chatjimmy2api/pkg/metrics"
-	"github.com/taalas/chatjimmy2api/pkg/stream"
-	"github.com/taalas/chatjimmy2api/pkg/transform"
-	"github.com/taalas/chatjimmy2api/pkg/types"
+	"github.com/taalas/chatjimmy2api/api/_internal/config"
+	"github.com/taalas/chatjimmy2api/api/_internal/client"
+	"github.com/taalas/chatjimmy2api/api/_internal/logger"
+	"github.com/taalas/chatjimmy2api/api/_internal/metrics"
+	"github.com/taalas/chatjimmy2api/api/_internal/stream"
+	"github.com/taalas/chatjimmy2api/api/_internal/transform"
+	"github.com/taalas/chatjimmy2api/api/_internal/types"
 )
 
 // APIHandler API 处理器
