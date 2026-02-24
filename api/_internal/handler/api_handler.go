@@ -445,27 +445,6 @@ func (h *APIHandler) handleStream(c *gin.Context, resp *http.Response, model str
 	completionID := transform.MakeCompletionID()
 	created := time.Now().Unix()
 
-	// 检测是否支持 Flusher（Vercel Serverless 不支持）
-	_, supportsFlush := c.Writer.(http.Flusher)
-	
-	// 在 Serverless 环境下强制使用非流式模式
-	if !supportsFlush {
-		h.handleNonStream(c, resp, model, meta)
-		return
-	}
-
-	// 发送初始块（角色）
-	initialChunk := transform.BuildChatCompletionChunk(
-		completionID,
-		created,
-		model,
-		types.Message{Role: types.RoleAssistant, Content: nil},
-		nil,
-		nil,
-	)
-	c.SSEvent("message", initialChunk)
-	c.Writer.Flush()
-
 	// 更新流模拟器配置
 	h.streamSim.UpdateConfig(
 		stream.StreamMode(cfg.StreamMode),
@@ -489,7 +468,8 @@ func (h *APIHandler) handleStream(c *gin.Context, resp *http.Response, model str
 				&finishReasonOpenAI,
 				nil,
 			)
-			c.SSEvent("message", finalChunk)
+			data, _ := json.Marshal(finalChunk)
+			c.Writer.WriteString("data: " + string(data) + "\n\n")
 			c.Writer.Flush()
 
 			// 如果请求包含 usage，发送使用量
@@ -503,12 +483,13 @@ func (h *APIHandler) handleStream(c *gin.Context, resp *http.Response, model str
 					nil,
 					&usage,
 				)
-				c.SSEvent("message", usageChunk)
+				data, _ = json.Marshal(usageChunk)
+				c.Writer.WriteString("data: " + string(data) + "\n\n")
 				c.Writer.Flush()
 			}
 
 			// 发送 [DONE]
-			c.SSEvent("message", "[DONE]")
+			c.Writer.WriteString("data: [DONE]\n\n")
 			c.Writer.Flush()
 			break
 		}
@@ -522,7 +503,8 @@ func (h *APIHandler) handleStream(c *gin.Context, resp *http.Response, model str
 			nil,
 			nil,
 		)
-		c.SSEvent("message", chunk)
+		data, _ := json.Marshal(chunk)
+		c.Writer.WriteString("data: " + string(data) + "\n\n")
 		c.Writer.Flush()
 	}
 
